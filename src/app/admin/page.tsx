@@ -6,11 +6,49 @@ import { getFallbackContent, type FallbackContent, getScheduledVideos, type Sche
 import { PreviewDialog } from '@/components/schedule/preview-dialog';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { format } from 'date-fns';
+import { format, differenceInSeconds } from 'date-fns';
 import { Separator } from '@/components/ui/separator';
 import { Button } from '@/components/ui/button';
 import { Copy } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+
+function CountdownTimer({ startTime, endTime }: { startTime: Date; endTime: Date }) {
+  const [now, setNow] = useState(new Date());
+
+  useEffect(() => {
+    const timer = setInterval(() => setNow(new Date()), 1000);
+    return () => clearInterval(timer);
+  }, []);
+
+  const diffStart = differenceInSeconds(startTime, now);
+  const diffEnd = differenceInSeconds(endTime, now);
+
+  if (diffStart > 0) {
+    const days = Math.floor(diffStart / (60 * 60 * 24));
+    const hours = Math.floor((diffStart % (60 * 60 * 24)) / (60 * 60));
+    const minutes = Math.floor((diffStart % (60 * 60)) / 60);
+    const seconds = diffStart % 60;
+    return (
+      <div className="text-xs text-muted-foreground mt-2">
+        <span className="font-semibold text-primary">Akan Datang:</span> {days > 0 && `${days}h `}{`${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`}
+      </div>
+    );
+  }
+
+  if (diffEnd > 0) {
+    return (
+      <div className="text-xs font-semibold text-green-600 mt-2">
+        Sedang Tayang
+      </div>
+    );
+  }
+
+  return (
+    <div className="text-xs text-muted-foreground mt-2">
+      Telah Selesai
+    </div>
+  );
+}
 
 export default function AdminPage() {
     const [fallbackContent, setFallbackContent] = useState<FallbackContent | null>(null);
@@ -115,6 +153,7 @@ export default function AdminPage() {
                      <p className="text-xs text-muted-foreground">
                         <span className="font-semibold">End:</span> {format(schedule.endTime, "PPp")}
                     </p>
+                    <CountdownTimer startTime={schedule.startTime} endTime={schedule.endTime} />
                 </CardContent>
             </Card>
             ))}
