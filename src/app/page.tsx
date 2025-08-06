@@ -20,7 +20,7 @@ export default function Home() {
   useEffect(() => {
     async function fetchActiveContent() {
       const content = await getActiveContent();
-      if (content && content.type === 'video') {
+      if (content && content.type === 'video' && content.url.includes('drive.google')) {
           content.url = convertGoogleDriveLinkToDirect(content.url);
       }
       setActiveContent(content);
@@ -50,7 +50,6 @@ export default function Home() {
           autoPlay 
           loop
           playsInline
-          controls
           className="h-full w-full object-cover"
         >
           Your browser does not support the video tag.
@@ -60,13 +59,11 @@ export default function Home() {
 
     if (activeContent.type === 'image') {
       return (
-        <div className="flex h-full w-full items-center justify-center bg-black">
-            <img 
-                src={activeContent.url} 
-                alt="Live Stream Content" 
-                className="h-full w-full object-cover"
-            />
-        </div>
+         <img 
+            src={activeContent.url} 
+            alt="Live Stream Content" 
+            className="h-full w-full object-cover"
+        />
       );
     }
 
@@ -74,12 +71,8 @@ export default function Home() {
   }
 
   return (
-    <div className="flex min-h-screen flex-col bg-black">
-      <main className="flex-1 flex items-stretch">
-        <div className="flex-1">
-          {renderContent()}
-        </div>
-      </main>
+    <div className="h-screen w-screen overflow-hidden bg-black">
+        {renderContent()}
     </div>
   );
 }
