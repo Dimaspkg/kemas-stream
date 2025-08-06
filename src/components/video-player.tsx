@@ -1,3 +1,4 @@
+
 'use client';
 
 import * as React from 'react';
@@ -22,16 +23,6 @@ const formSchema = z.object({
   url: z.string().url({ message: 'Please enter a valid URL.' }),
 });
 
-function convertGoogleDriveLinkToDirect(url: string): string {
-    if (!url) return '';
-    const fileIdMatch = url.match(/(?:drive\.google\.com\/(?:file\/d\/|uc\?id=))([a-zA-Z0-9_-]+)/);
-    if (fileIdMatch && fileIdMatch[1]) {
-        const fileId = fileIdMatch[1];
-        return `https://drive.google.com/uc?export=download&id=${fileId}`;
-    }
-    return url;
-}
-
 
 export function FallbackForm({ setFallbackContentOnPage }: FallbackFormProps) {
     const { toast } = useToast();
@@ -46,14 +37,9 @@ export function FallbackForm({ setFallbackContentOnPage }: FallbackFormProps) {
     const selectedType = form.watch('type');
 
     async function onSubmit(values: z.infer<typeof formSchema>) {
-        let finalUrl = values.url;
-        if (values.type === 'video') {
-            finalUrl = convertGoogleDriveLinkToDirect(values.url);
-        }
-        
         const content: FallbackContent = {
             type: values.type,
-            url: finalUrl
+            url: values.url
         };
 
         try {

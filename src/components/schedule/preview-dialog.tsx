@@ -12,19 +12,10 @@ import {
 import type { Schedule } from '@/services/video-service';
 import { Eye } from 'lucide-react';
 
-function convertGoogleDriveLinkToDirect(url: string): string {
-    if (!url) return '';
-    const fileIdMatch = url.match(/(?:drive\.google\.com\/(?:file\/d\/|uc\?id=))([a-zA-Z0-9_-]+)/);
-    if (fileIdMatch && fileIdMatch[1]) {
-        const fileId = fileIdMatch[1];
-        return `https://drive.google.com/uc?export=download&id=${fileId}`;
-    }
-    return url;
-}
 
 export function PreviewDialog({ schedule }: { schedule: Schedule }) {
   const [isOpen, setIsOpen] = React.useState(false);
-  const previewUrl = schedule.type === 'video' ? convertGoogleDriveLinkToDirect(schedule.url) : schedule.url;
+  const previewUrl = schedule.url;
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>

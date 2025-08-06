@@ -8,16 +8,6 @@ import { db } from '@/lib/firebase';
 import { Skeleton } from '@/components/ui/skeleton';
 
 
-function convertGoogleDriveLinkToDirect(url: string): string {
-    if (!url) return '';
-    const fileIdMatch = url.match(/(?:drive\.google\.com\/(?:file\/d\/|uc\?id=))([a-zA-Z0-9_-]+)/);
-    if (fileIdMatch && fileIdMatch[1]) {
-        const fileId = fileIdMatch[1];
-        return `https://drive.google.com/uc?export=download&id=${fileId}`;
-    }
-    return url;
-}
-
 function onContentChange(callback: (content: FallbackContent | null) => void): () => void {
   const handleUpdate = async () => {
     const content = await getActiveContent();
@@ -39,9 +29,6 @@ export default function Home() {
   const [isLoading, setIsLoading] = useState(true);
 
   const handleContentUpdate = (content: FallbackContent | null) => {
-      if (content && content.type === 'video' && content.url.includes('drive.google')) {
-          content.url = convertGoogleDriveLinkToDirect(content.url);
-      }
       setActiveContent(content);
       setIsLoading(false);
   };
