@@ -1,15 +1,23 @@
+
 'use client';
 import { useState, useEffect } from 'react';
 import { FallbackForm } from '@/components/video-player';
-import { getFallbackContent, type FallbackContent } from '@/services/video-service';
+import { getFallbackContent, type FallbackContent, getScheduledVideos, type Schedule } from '@/services/video-service';
+import { PreviewDialog } from '@/components/schedule/preview-dialog';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { format } from 'date-fns';
 
 export default function AdminPage() {
     const [fallbackContent, setFallbackContent] = useState<FallbackContent | null>(null);
+    const [schedules, setSchedules] = useState<Schedule[]>([]);
 
     useEffect(() => {
       async function fetchContent() {
         const content = await getFallbackContent();
         setFallbackContent(content);
+        const scheduledData = await getScheduledVideos();
+        setSchedules(scheduledData);
       }
       fetchContent();
     }, []);
@@ -53,6 +61,48 @@ export default function AdminPage() {
           )}
         </div>
       </div>
+       <div className="mt-12">
+        <div className="mb-8">
+            <h2 className="text-2xl font-bold tracking-tight">Upcoming Scheduled Content</h2>
+            <p className="text-muted-foreground">
+                Here is a list of all your scheduled content.
+            </p>
+        </div>
+        {schedules.length > 0 ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {schedules.map(schedule => (
+                    <Card key={schedule.id}>
+                        <CardHeader>
+                           <div className="flex justify-between items-start">
+                             <div>
+                               <CardTitle className="text-lg mb-1">{schedule.title}</CardTitle>
+                               <Badge variant={schedule.type === 'video' ? 'secondary' : 'outline'}>
+                                {schedule.type}
+                               </Badge>
+                             </div>
+                             <PreviewDialog schedule={schedule} />
+                           </div>
+                        </CardHeader>
+                        <CardContent>
+                            <p className="text-sm text-muted-foreground">
+                                <span className="font-semibold">Start:</span> {format(schedule.startTime, "PPpp")}
+                            </p>
+                             <p className="text-sm text-muted-foreground">
+                                <span className="font-semibold">End:</span> {format(schedule.endTime, "PPpp")}
+                            </p>
+                            <p className="text-sm text-muted-foreground mt-2 max-w-full truncate">
+                                <span className="font-semibold">URL:</span> {schedule.url}
+                            </p>
+                        </CardContent>
+                    </Card>
+                ))}
+            </div>
+        ) : (
+             <div className="flex items-center justify-center h-24 border-2 border-dashed rounded-lg">
+                <p className="text-muted-foreground">No content scheduled yet.</p>
+             </div>
+        )}
+       </div>
     </div>
   );
 }
