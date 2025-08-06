@@ -60,7 +60,6 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-  AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Badge } from '@/components/ui/badge';
@@ -453,8 +452,8 @@ export default function SchedulePage() {
                   <TableCell className="max-w-xs truncate text-muted-foreground">
                     {schedule.url}
                   </TableCell>
-                  <TableCell>{format(schedule.startTime, "PPpp")}</TableCell>
-                  <TableCell>{format(schedule.endTime, "PPpp")}</TableCell>
+                  <TableCell>{format(schedule.startTime, "PPp")}</TableCell>
+                  <TableCell>{format(schedule.endTime, "PPp")}</TableCell>
                    <TableCell>
                     <PreviewDialog schedule={schedule} />
                   </TableCell>

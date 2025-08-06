@@ -26,10 +26,12 @@ export default function AdminPage() {
     <div className="flex-1 flex flex-col p-4">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
         <div>
+           <h2 className="text-2xl font-bold tracking-tight mb-4">Fallback Content</h2>
           <FallbackForm setFallbackContentOnPage={setFallbackContent} />
         </div>
         <div>
-          {fallbackContent?.url && (
+           <h2 className="text-2xl font-bold tracking-tight mb-4">Preview</h2>
+          {fallbackContent?.url ? (
             <div className="aspect-video w-full overflow-hidden rounded-lg bg-black flex items-center justify-center">
               {fallbackContent.type === 'video' ? (
                  <video 
@@ -52,6 +54,10 @@ export default function AdminPage() {
                 />
               )}
             </div>
+          ) : (
+             <div className="flex items-center justify-center h-full border-2 border-dashed rounded-lg">
+                <p className="text-muted-foreground">No fallback content set.</p>
+             </div>
           )}
         </div>
       </div>
@@ -63,13 +69,13 @@ export default function AdminPage() {
             </p>
         </div>
         {schedules.length > 0 ? (
-           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
             {schedules.map((schedule) => (
                <Card key={schedule.id} className="flex flex-col">
-                <CardHeader>
+                <CardHeader className="p-4">
                    <div className="flex justify-between items-start">
                      <div>
-                       <CardTitle className="text-lg mb-1">{schedule.title}</CardTitle>
+                       <CardTitle className="text-base mb-1">{schedule.title}</CardTitle>
                        <Badge variant={schedule.type === 'video' ? 'secondary' : 'outline'}>
                         {schedule.type}
                        </Badge>
@@ -77,14 +83,14 @@ export default function AdminPage() {
                      <PreviewDialog schedule={schedule} />
                    </div>
                 </CardHeader>
-                <CardContent className="flex-grow">
-                    <p className="text-sm text-muted-foreground">
-                        <span className="font-semibold">Start:</span> {format(schedule.startTime, "PPpp")}
+                <CardContent className="flex-grow p-4 pt-0">
+                    <p className="text-xs text-muted-foreground">
+                        <span className="font-semibold">Start:</span> {format(schedule.startTime, "PPp")}
                     </p>
-                     <p className="text-sm text-muted-foreground">
-                        <span className="font-semibold">End:</span> {format(schedule.endTime, "PPpp")}
+                     <p className="text-xs text-muted-foreground">
+                        <span className="font-semibold">End:</span> {format(schedule.endTime, "PPp")}
                     </p>
-                    <p className="text-sm text-muted-foreground mt-2 max-w-full truncate">
+                    <p className="text-xs text-muted-foreground mt-2 max-w-full truncate">
                         <span className="font-semibold">URL:</span> {schedule.url}
                     </p>
                 </CardContent>
