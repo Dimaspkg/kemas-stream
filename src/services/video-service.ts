@@ -22,6 +22,7 @@ export interface Schedule {
   id: string;
   title: string;
   url: string;
+  type: 'video' | 'image';
   startTime: Date;
   endTime: Date;
 }
@@ -29,6 +30,7 @@ export interface Schedule {
 export interface ScheduleData {
   title: string;
   url: string;
+  type: 'video' | 'image';
   startTime: Timestamp;
   endTime: Timestamp;
 }
@@ -80,6 +82,7 @@ export async function getScheduledVideos(): Promise<Schedule[]> {
         id: doc.id,
         title: data.title,
         url: data.url,
+        type: data.type || 'video', // Default to video if type is not set
         startTime: (data.startTime as Timestamp).toDate(),
         endTime: (data.endTime as Timestamp).toDate(),
       };
@@ -95,6 +98,7 @@ export async function updateScheduledVideo(id: string, video: Partial<Omit<Sched
     const dataToUpdate: Partial<ScheduleData> = {};
     if (video.title) dataToUpdate.title = video.title;
     if (video.url) dataToUpdate.url = video.url;
+    if (video.type) dataToUpdate.type = video.type;
     if (video.startTime) dataToUpdate.startTime = Timestamp.fromDate(video.startTime);
     if (video.endTime) dataToUpdate.endTime = Timestamp.fromDate(video.endTime);
     
@@ -120,9 +124,10 @@ export async function getActiveContent(): Promise<FallbackContent | null> {
 
         if (!snapshot.empty) {
             const activeDoc = snapshot.docs[0];
+            const data = activeDoc.data();
             return {
-                type: 'video', // Scheduled content is always a video
-                url: activeDoc.data().url
+                type: data.type || 'video',
+                url: data.url
             };
         }
         

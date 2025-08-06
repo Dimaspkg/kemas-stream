@@ -38,7 +38,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { CalendarIcon, MoreHorizontal, PlusCircle, Trash2 } from 'lucide-react';
+import { CalendarIcon, MoreHorizontal, PlusCircle } from 'lucide-react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
 import { format, setHours, setMinutes } from 'date-fns';
@@ -59,12 +59,14 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-  AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Badge } from '@/components/ui/badge';
 
 const scheduleSchema = z
   .object({
     title: z.string().min(1, 'Title is required.'),
+    type: z.enum(['video', 'image']),
     url: z.string().url('Please enter a valid URL.'),
     startTime: z.date({ required_error: 'Start date and time is required.' }),
     endTime: z.date({ required_error: 'End date and time is required.' }),
@@ -91,6 +93,7 @@ function ScheduleForm({
   const defaultValues: Partial<ScheduleFormValues> = schedule ? {
       title: schedule.title,
       url: schedule.url,
+      type: schedule.type,
       startTime: schedule.startTime,
       endTime: schedule.endTime,
       startTimeStr: format(schedule.startTime, "HH:mm"),
@@ -98,6 +101,7 @@ function ScheduleForm({
   } : {
       title: '',
       url: '',
+      type: 'video',
       startTimeStr: '09:00',
       endTimeStr: '17:00',
   };
@@ -106,6 +110,8 @@ function ScheduleForm({
     resolver: zodResolver(scheduleSchema),
     defaultValues,
   });
+  
+  const selectedType = form.watch('type');
 
   const handleDateWithTime = (date: Date | undefined, timeStr: string) => {
     if (!date) return date;
@@ -131,6 +137,7 @@ function ScheduleForm({
       const scheduleData = {
         title: data.title,
         url: data.url,
+        type: data.type,
         startTime: finalStartTime,
         endTime: finalEndTime,
       };
@@ -166,7 +173,7 @@ function ScheduleForm({
         <DialogHeader>
           <DialogTitle>{schedule ? 'Edit' : 'Add'} Schedule</DialogTitle>
           <DialogDescription>
-            {schedule ? 'Update the details of this scheduled stream.' : 'Add a new video stream to the schedule.'}
+            {schedule ? 'Update the details of this scheduled stream.' : 'Add a new item to the schedule.'}
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
@@ -185,13 +192,43 @@ function ScheduleForm({
               )}
             />
             <FormField
+                control={form.control}
+                name="type"
+                render={({ field }) => (
+                    <FormItem className="space-y-2">
+                    <FormLabel>Content Type</FormLabel>
+                    <FormControl>
+                        <RadioGroup
+                        onValueChange={field.onChange}
+                        defaultValue={field.value}
+                        className="flex space-x-4"
+                        >
+                        <FormItem className="flex items-center space-x-2">
+                            <FormControl>
+                            <RadioGroupItem value="video" id="video" />
+                            </FormControl>
+                            <FormLabel htmlFor="video" className="font-normal">Video</FormLabel>
+                        </FormItem>
+                        <FormItem className="flex items-center space-x-2">
+                            <FormControl>
+                            <RadioGroupItem value="image" id="image" />
+                            </FormControl>
+                            <FormLabel htmlFor="image" className="font-normal">Image</FormLabel>
+                        </FormItem>
+                        </RadioGroup>
+                    </FormControl>
+                    <FormMessage />
+                    </FormItem>
+                )}
+            />
+            <FormField
               control={form.control}
               name="url"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Google Drive Video URL</FormLabel>
+                  <FormLabel>{selectedType === 'video' ? 'Google Drive Video URL' : 'Image URL'}</FormLabel>
                   <FormControl>
-                    <Input placeholder="https://drive.google.com/file/d/..." {...field} />
+                    <Input placeholder={selectedType === 'video' ? 'https://drive.google.com/file/d/...' : 'https://example.com/image.png'} {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -376,9 +413,9 @@ export default function SchedulePage() {
     <div className="p-8 pt-6">
       <div className="flex items-center justify-between mb-8">
         <div>
-          <h2 className="text-2xl font-bold tracking-tight">Video Schedule</h2>
+          <h2 className="text-2xl font-bold tracking-tight">Content Schedule</h2>
           <p className="text-muted-foreground">
-            Manage your scheduled video streams.
+            Manage your scheduled video streams and images.
           </p>
         </div>
         <ScheduleForm onFinished={fetchSchedules} />
@@ -389,6 +426,7 @@ export default function SchedulePage() {
           <TableHeader>
             <TableRow>
               <TableHead>Title</TableHead>
+              <TableHead>Type</TableHead>
               <TableHead>URL</TableHead>
               <TableHead>Start Time</TableHead>
               <TableHead>End Time</TableHead>
@@ -402,6 +440,11 @@ export default function SchedulePage() {
               schedules.map((schedule) => (
                 <TableRow key={schedule.id}>
                   <TableCell className="font-medium">{schedule.title}</TableCell>
+                   <TableCell>
+                    <Badge variant={schedule.type === 'video' ? 'secondary' : 'outline'}>
+                      {schedule.type}
+                    </Badge>
+                  </TableCell>
                   <TableCell className="max-w-xs truncate text-muted-foreground">
                     {schedule.url}
                   </TableCell>
@@ -430,7 +473,7 @@ export default function SchedulePage() {
               ))
             ) : (
               <TableRow>
-                <TableCell colSpan={5} className="h-24 text-center">
+                <TableCell colSpan={6} className="h-24 text-center">
                   No schedules found.
                 </TableCell>
               </TableRow>
