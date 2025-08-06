@@ -2,7 +2,7 @@
 'use client';
 import { useState, useEffect } from 'react';
 import { FallbackForm } from '@/components/video-player';
-import { getFallbackContent, type FallbackContent, getScheduledVideos, type Schedule } from '@/services/video-service';
+import { getFallbackContent, type FallbackContent, getScheduledVideos, type Schedule, getActiveContent } from '@/services/video-service';
 import { PreviewDialog } from '@/components/schedule/preview-dialog';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -11,6 +11,10 @@ import { Separator } from '@/components/ui/separator';
 import { Button } from '@/components/ui/button';
 import { Copy } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { onSnapshot, collection, doc } from 'firebase/firestore';
+import { db } from '@/lib/firebase';
+import { Skeleton } from '@/components/ui/skeleton';
+
 
 function CountdownTimer({ startTime, endTime }: { startTime: Date; endTime: Date }) {
   const [now, setNow] = useState(new Date());
@@ -57,20 +61,51 @@ function CountdownTimer({ startTime, endTime }: { startTime: Date; endTime: Date
   );
 }
 
+function onContentChange(callback: (content: FallbackContent | null) => void): () => void {
+  const handleUpdate = async () => {
+    const content = await getActiveContent();
+    callback(content);
+  };
+
+  handleUpdate();
+
+  const scheduleUnsubscribe = onSnapshot(collection(db, 'schedule'), handleUpdate);
+  const fallbackUnsubscribe = onSnapshot(doc(db, 'settings', 'fallbackContent'), handleUpdate);
+
+  return () => {
+    scheduleUnsubscribe();
+    fallbackUnsubscribe();
+  };
+}
+
 export default function AdminPage() {
     const [fallbackContent, setFallbackContent] = useState<FallbackContent | null>(null);
     const [schedules, setSchedules] = useState<Schedule[]>([]);
+    const [activeContent, setActiveContent] = useState<FallbackContent | null>(null);
+    const [isLoadingPreview, setIsLoadingPreview] = useState(true);
     const { toast } = useToast();
 
     useEffect(() => {
-      async function fetchContent() {
-        const content = await getFallbackContent();
-        setFallbackContent(content);
+      async function fetchSchedules() {
         const scheduledData = await getScheduledVideos();
         setSchedules(scheduledData);
       }
-      fetchContent();
+      fetchSchedules();
+
+      const unsubscribe = onContentChange((content) => {
+        setActiveContent(content);
+        setIsLoadingPreview(false);
+      });
+
+      return () => unsubscribe();
     }, []);
+
+    const handleFallbackUpdate = (content: FallbackContent) => {
+      setFallbackContent(content);
+      // If no schedule is active, the active content might be the fallback.
+      // We can re-fetch active content to be sure.
+      getActiveContent().then(setActiveContent);
+    };
 
     const handleCopyUrl = (url: string) => {
       navigator.clipboard.writeText(url).then(() => {
@@ -93,16 +128,20 @@ export default function AdminPage() {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
         <div>
            <h2 className="text-2xl font-bold tracking-tight mb-4">Fallback Content</h2>
-          <FallbackForm setFallbackContentOnPage={setFallbackContent} />
+          <FallbackForm setFallbackContentOnPage={handleFallbackUpdate} />
         </div>
         <div>
-           <h2 className="text-2xl font-bold tracking-tight mb-4">Preview</h2>
-          {fallbackContent?.url ? (
+           <h2 className="text-2xl font-bold tracking-tight mb-4">Live Preview</h2>
+          {isLoadingPreview ? (
+            <div className="flex items-center justify-center h-full border-2 border-dashed rounded-lg">
+                <Skeleton className="h-full w-full" />
+            </div>
+           ) : activeContent?.url ? (
             <div className="aspect-video w-full overflow-hidden rounded-lg bg-black flex items-center justify-center">
-              {fallbackContent.type === 'video' ? (
+              {activeContent.type === 'video' ? (
                  <video 
-                    key={fallbackContent.url}
-                    src={fallbackContent.url} 
+                    key={activeContent.url}
+                    src={activeContent.url} 
                     controls 
                     autoPlay
                     loop
@@ -114,15 +153,15 @@ export default function AdminPage() {
                   </video>
               ) : (
                 <img 
-                    src={fallbackContent.url} 
-                    alt="Fallback Content" 
+                    src={activeContent.url} 
+                    alt="Live Content" 
                     className="h-full w-full object-cover"
                 />
               )}
             </div>
           ) : (
              <div className="flex items-center justify-center h-full border-2 border-dashed rounded-lg">
-                <p className="text-muted-foreground">No fallback content set.</p>
+                <p className="text-muted-foreground">No content is live.</p>
              </div>
           )}
         </div>
