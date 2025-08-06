@@ -7,13 +7,6 @@ import { PreviewDialog } from '@/components/schedule/preview-dialog';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { format } from 'date-fns';
-import {
-  Carousel,
-  CarouselContent,
-  CarouselItem,
-  CarouselNext,
-  CarouselPrevious,
-} from '@/components/ui/carousel';
 
 export default function AdminPage() {
     const [fallbackContent, setFallbackContent] = useState<FallbackContent | null>(null);
@@ -70,47 +63,34 @@ export default function AdminPage() {
             </p>
         </div>
         {schedules.length > 0 ? (
-          <Carousel
-              opts={{
-                align: "start",
-              }}
-              className="w-full"
-            >
-              <CarouselContent>
-                {schedules.map((schedule) => (
-                  <CarouselItem key={schedule.id} className="md:basis-1/2 lg:basis-1/3">
-                    <div className="p-1 h-full">
-                       <Card className="h-full flex flex-col">
-                        <CardHeader>
-                           <div className="flex justify-between items-start">
-                             <div>
-                               <CardTitle className="text-lg mb-1">{schedule.title}</CardTitle>
-                               <Badge variant={schedule.type === 'video' ? 'secondary' : 'outline'}>
-                                {schedule.type}
-                               </Badge>
-                             </div>
-                             <PreviewDialog schedule={schedule} />
-                           </div>
-                        </CardHeader>
-                        <CardContent className="flex-grow">
-                            <p className="text-sm text-muted-foreground">
-                                <span className="font-semibold">Start:</span> {format(schedule.startTime, "PPpp")}
-                            </p>
-                             <p className="text-sm text-muted-foreground">
-                                <span className="font-semibold">End:</span> {format(schedule.endTime, "PPpp")}
-                            </p>
-                            <p className="text-sm text-muted-foreground mt-2 max-w-full truncate">
-                                <span className="font-semibold">URL:</span> {schedule.url}
-                            </p>
-                        </CardContent>
-                    </Card>
-                    </div>
-                  </CarouselItem>
-                ))}
-              </CarouselContent>
-              <CarouselPrevious />
-              <CarouselNext />
-            </Carousel>
+           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {schedules.map((schedule) => (
+               <Card key={schedule.id} className="flex flex-col">
+                <CardHeader>
+                   <div className="flex justify-between items-start">
+                     <div>
+                       <CardTitle className="text-lg mb-1">{schedule.title}</CardTitle>
+                       <Badge variant={schedule.type === 'video' ? 'secondary' : 'outline'}>
+                        {schedule.type}
+                       </Badge>
+                     </div>
+                     <PreviewDialog schedule={schedule} />
+                   </div>
+                </CardHeader>
+                <CardContent className="flex-grow">
+                    <p className="text-sm text-muted-foreground">
+                        <span className="font-semibold">Start:</span> {format(schedule.startTime, "PPpp")}
+                    </p>
+                     <p className="text-sm text-muted-foreground">
+                        <span className="font-semibold">End:</span> {format(schedule.endTime, "PPpp")}
+                    </p>
+                    <p className="text-sm text-muted-foreground mt-2 max-w-full truncate">
+                        <span className="font-semibold">URL:</span> {schedule.url}
+                    </p>
+                </CardContent>
+            </Card>
+            ))}
+           </div>
         ) : (
              <div className="flex items-center justify-center h-24 border-2 border-dashed rounded-lg">
                 <p className="text-muted-foreground">No content scheduled yet.</p>
