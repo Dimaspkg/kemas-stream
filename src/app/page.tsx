@@ -39,8 +39,7 @@ export default function Home() {
               key={videoUrl} 
               src={videoUrl}
               autoPlay 
-              loop 
-              muted
+              loop
               playsInline
               controls
               className="h-full w-full object-cover"

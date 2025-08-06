@@ -5,11 +5,13 @@ import { getSingleVideoUrl } from '@/services/video-service';
 
 function convertGoogleDriveLinkToDirect(url: string): string {
     if (!url) return '';
+    // Regular expression to extract file ID from various Google Drive link formats
     const fileIdMatch = url.match(/(?:drive\.google\.com\/(?:file\/d\/|uc\?id=))([a-zA-Z0-9_-]+)/);
     if (fileIdMatch && fileIdMatch[1]) {
         const fileId = fileIdMatch[1];
         return `https://drive.google.com/uc?export=download&id=${fileId}`;
     }
+    // Fallback for links that might already be in a direct-ish format or other formats
     return url;
 }
 
@@ -20,7 +22,8 @@ export default function AdminPage() {
     useEffect(() => {
       async function fetchVideoUrl() {
         const url = await getSingleVideoUrl();
-        const initialUrl = url || 'https://drive.google.com/uc?export=download&id=1IpWBVYgzV5s4oydxy0ZiCn4zMsM8kYZc';
+        // Use the user-provided video as a fallback for demonstration
+        const initialUrl = url || 'https://drive.google.com/file/d/1IpWBVYgzV5s4oydxy0ZiCn4zMsM8kYZc/view?usp=sharing';
         const directUrl = convertGoogleDriveLinkToDirect(initialUrl);
         setVideoUrl(directUrl);
         setVideoUrlFromDb(initialUrl); // Keep the original from DB for reference
@@ -47,8 +50,7 @@ export default function AdminPage() {
                 key={videoUrl}
                 src={videoUrl} 
                 controls 
-                autoPlay 
-                muted
+                autoPlay
                 playsInline 
                 className="h-full w-full"
               >
