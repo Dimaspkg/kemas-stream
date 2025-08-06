@@ -21,11 +21,25 @@ const formSchema = z.object({
 });
 
 function convertGoogleDriveLinkToDirect(url: string): string {
-  const regex = /drive\.google\.com\/file\/d\/([a-zA-Z0-9_-]+)/;
-  const match = url.match(regex);
-  if (match && match[1]) {
-    return `https://drive.google.com/uc?export=download&id=${match[1]}`;
+  let fileId = null;
+  
+  // Regex for standard share links: https://drive.google.com/file/d/FILE_ID/view?usp=sharing
+  const standardMatch = url.match(/drive\.google\.com\/file\/d\/([a-zA-Z0-9_-]+)/);
+  if (standardMatch && standardMatch[1]) {
+    fileId = standardMatch[1];
   }
+
+  // Regex for direct download links: https://drive.google.com/uc?export=download&id=FILE_ID
+  const ucMatch = url.match(/uc\?.*id=([a-zA-Z0-9_-]+)/);
+  if (ucMatch && ucMatch[1]) {
+    fileId = ucMatch[1];
+  }
+  
+  if (fileId) {
+    return `https://drive.google.com/uc?export=download&id=${fileId}`;
+  }
+  
+  // If no match, return the original URL
   return url;
 }
 
