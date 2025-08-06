@@ -26,8 +26,15 @@ export default function AdminPage() {
         <div>
           {videoUrl && (
             <div className="aspect-video w-full overflow-hidden rounded-lg bg-black">
-              <video key={videoUrl} controls autoPlay muted playsInline className="h-full w-full">
-                <source src={videoUrl} type="video/mp4" />
+              <video 
+                key={videoUrl}
+                src={videoUrl} 
+                controls 
+                autoPlay 
+                muted 
+                playsInline 
+                className="h-full w-full"
+              >
                 Your browser does not support the video tag.
               </video>
             </div>
