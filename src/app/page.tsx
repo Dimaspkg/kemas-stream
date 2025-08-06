@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { getActiveVideoUrl } from '@/services/video-service';
+import { getActiveContent, FallbackContent } from '@/services/video-service';
 
 function convertGoogleDriveLinkToDirect(url: string): string {
     if (!url) return '';
@@ -15,42 +15,69 @@ function convertGoogleDriveLinkToDirect(url: string): string {
 
 
 export default function Home() {
-  const [videoUrl, setVideoUrl] = useState('');
+  const [activeContent, setActiveContent] = useState<FallbackContent | null>(null);
 
   useEffect(() => {
-    async function fetchVideoUrl() {
-      const url = await getActiveVideoUrl();
-      const directUrl = convertGoogleDriveLinkToDirect(url || 'https://drive.google.com/uc?export=download&id=1IpWBVYgzV5s4oydxy0ZiCn4zMsM8kYZc');
-      setVideoUrl(directUrl);
+    async function fetchActiveContent() {
+      const content = await getActiveContent();
+      if (content && content.type === 'video') {
+          content.url = convertGoogleDriveLinkToDirect(content.url);
+      }
+      setActiveContent(content);
     }
-    fetchVideoUrl();
     
-    const interval = setInterval(fetchVideoUrl, 60000); // Check for new active video every minute
+    fetchActiveContent();
+    
+    const interval = setInterval(fetchActiveContent, 60000); // Check for new active content every minute
 
     return () => clearInterval(interval);
   }, []);
+
+  const renderContent = () => {
+    if (!activeContent || !activeContent.url) {
+      return (
+        <div className="flex h-full w-full items-center justify-center bg-black text-white">
+          <p>No scheduled stream is active at the moment.</p>
+        </div>
+      );
+    }
+
+    if (activeContent.type === 'video') {
+      return (
+        <video 
+          key={activeContent.url} 
+          src={activeContent.url}
+          autoPlay 
+          loop
+          playsInline
+          controls
+          className="h-full w-full object-cover"
+        >
+          Your browser does not support the video tag.
+        </video>
+      );
+    }
+
+    if (activeContent.type === 'image') {
+      return (
+        <div className="flex h-full w-full items-center justify-center bg-black">
+            <img 
+                src={activeContent.url} 
+                alt="Live Stream Content" 
+                className="max-h-full max-w-full object-contain"
+            />
+        </div>
+      );
+    }
+
+    return null;
+  }
 
   return (
     <div className="flex min-h-screen flex-col bg-black">
       <main className="flex-1 flex items-stretch">
         <div className="flex-1">
-          {videoUrl ? (
-            <video 
-              key={videoUrl} 
-              src={videoUrl}
-              autoPlay 
-              loop
-              playsInline
-              controls
-              className="h-full w-full object-cover"
-            >
-              Your browser does not support the video tag.
-            </video>
-          ) : (
-             <div className="flex h-full w-full items-center justify-center bg-black text-white">
-              <p>No scheduled stream is active at the moment.</p>
-            </div>
-          )}
+          {renderContent()}
         </div>
       </main>
     </div>

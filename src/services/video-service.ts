@@ -15,7 +15,7 @@ import {
 } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 
-const videoConfigDoc = doc(db, 'settings', 'video');
+const videoConfigDoc = doc(db, 'settings', 'fallbackContent');
 const scheduleCollection = collection(db, 'schedule');
 
 export interface Schedule {
@@ -33,25 +33,32 @@ export interface ScheduleData {
   endTime: Timestamp;
 }
 
-
-// --- Single Video URL Functions (Legacy, might be phased out) ---
-
-export async function setVideoUrl(url: string): Promise<void> {
-  await setDoc(videoConfigDoc, { url });
+export interface FallbackContent {
+    type: 'video' | 'image';
+    url: string;
 }
 
-export async function getSingleVideoUrl(): Promise<string | null> {
+export async function setFallbackContent(content: FallbackContent): Promise<void> {
+  await setDoc(videoConfigDoc, content);
+}
+
+export async function getFallbackContent(): Promise<FallbackContent | null> {
   try {
     const docSnap = await getDoc(videoConfigDoc);
     if (docSnap.exists()) {
-      return docSnap.data().url;
+      return docSnap.data() as FallbackContent;
     }
-    return null;
+    // Default fallback if nothing is set
+    return { 
+        type: 'video', 
+        url: 'https://drive.google.com/uc?export=download&id=1IpWBVYgzV5s4oydxy0ZiCn4zMsM8kYZc' 
+    };
   } catch (error) {
-    console.error("Error fetching single video URL:", error);
+    console.error("Error fetching fallback content:", error);
     return null;
   }
 }
+
 
 // --- Video Scheduling Functions ---
 
@@ -100,7 +107,7 @@ export async function deleteScheduledVideo(id: string): Promise<void> {
 }
 
 
-export async function getActiveVideoUrl(): Promise<string | null> {
+export async function getActiveContent(): Promise<FallbackContent | null> {
     try {
         const now = Timestamp.now();
         const q = query(
@@ -112,17 +119,16 @@ export async function getActiveVideoUrl(): Promise<string | null> {
         const snapshot = await getDocs(q);
 
         if (!snapshot.empty) {
-            // There should ideally be only one active video.
-            // If there are overlaps, just take the first one.
             const activeDoc = snapshot.docs[0];
-            return activeDoc.data().url;
+            return {
+                type: 'video', // Scheduled content is always a video
+                url: activeDoc.data().url
+            };
         }
         
-        // Fallback to the single video URL if no scheduled video is active
-        return await getSingleVideoUrl();
+        return await getFallbackContent();
     } catch (error) {
-        console.error("Error fetching active video URL:", error);
-        // Fallback to single video URL on error
-        return await getSingleVideoUrl();
+        console.error("Error fetching active content:", error);
+        return await getFallbackContent();
     }
 }
