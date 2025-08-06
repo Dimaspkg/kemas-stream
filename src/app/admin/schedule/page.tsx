@@ -492,7 +492,6 @@ export default function SchedulePage() {
                          <DropdownMenuItem onSelect={(e) => e.preventDefault()} asChild>
                            <div className="flex items-center gap-2">
                             <PreviewDialog schedule={schedule} />
-                            <span>Preview</span>
                            </div>
                         </DropdownMenuItem>
                         <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
