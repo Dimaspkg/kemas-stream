@@ -32,7 +32,7 @@ export default function Home() {
     
     fetchActiveContent();
     
-    const interval = setInterval(fetchActiveContent, 60000); // Check for new active content every minute
+    const interval = setInterval(fetchActiveContent, 5000); // Check for new active content every 5 seconds
 
     return () => clearInterval(interval);
   }, []);
