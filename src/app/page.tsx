@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { getVideoUrl } from '@/services/video-service';
+import { getActiveVideoUrl } from '@/services/video-service';
 
 function convertGoogleDriveLinkToDirect(url: string): string {
     if (!url) return '';
@@ -25,30 +25,37 @@ export default function Home() {
 
   useEffect(() => {
     async function fetchVideoUrl() {
-      const url = await getVideoUrl();
+      const url = await getActiveVideoUrl();
       const directUrl = convertGoogleDriveLinkToDirect(url || 'https://drive.google.com/uc?export=download&id=1IpWBVYgzV5s4oydxy0ZiCn4zMsM8kYZc');
       setVideoUrl(directUrl);
     }
     fetchVideoUrl();
+    
+    const interval = setInterval(fetchVideoUrl, 60000); // Check for new active video every minute
+
+    return () => clearInterval(interval);
   }, []);
 
   return (
     <div className="flex min-h-screen flex-col bg-black">
       <main className="flex-1 flex items-stretch">
         <div className="flex-1">
-          {videoUrl && (
+          {videoUrl ? (
             <video 
               key={videoUrl} 
               src={videoUrl}
               autoPlay 
               loop 
-              muted 
+              muted
               playsInline
-              controls
               className="h-full w-full object-cover"
             >
               Your browser does not support the video tag.
             </video>
+          ) : (
+             <div className="flex h-full w-full items-center justify-center bg-black text-white">
+              <p>No scheduled stream is active at the moment.</p>
+            </div>
           )}
         </div>
       </main>

@@ -1,7 +1,7 @@
 'use client';
 import { useState, useEffect } from 'react';
 import { VideoUrlForm } from '@/components/video-player';
-import { getVideoUrl } from '@/services/video-service';
+import { getSingleVideoUrl } from '@/services/video-service';
 
 function convertGoogleDriveLinkToDirect(url: string): string {
     if (!url) return '';
@@ -25,7 +25,7 @@ export default function AdminPage() {
 
     useEffect(() => {
       async function fetchVideoUrl() {
-        const url = await getVideoUrl();
+        const url = await getSingleVideoUrl();
         const initialUrl = url || 'https://drive.google.com/uc?export=download&id=1IpWBVYgzV5s4oydxy0ZiCn4zMsM8kYZc';
         const directUrl = convertGoogleDriveLinkToDirect(initialUrl);
         setVideoUrl(directUrl);
@@ -36,6 +36,12 @@ export default function AdminPage() {
 
   return (
     <div className="flex-1 p-8 pt-6">
+       <div className="mb-8">
+        <h2 className="text-2xl font-bold tracking-tight">Fallback Video Stream</h2>
+        <p className="text-muted-foreground">
+          This video will play when no other stream is scheduled.
+        </p>
+      </div>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
         <div>
           <VideoUrlForm setVideoUrl={setVideoUrlFromDb} />
@@ -48,7 +54,7 @@ export default function AdminPage() {
                 src={videoUrl} 
                 controls 
                 autoPlay 
-                muted 
+                muted
                 playsInline 
                 className="h-full w-full"
               >

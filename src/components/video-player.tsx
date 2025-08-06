@@ -4,7 +4,7 @@ import * as React from 'react';
 import { z } from 'zod';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
@@ -54,7 +54,7 @@ export function VideoUrlForm({ setVideoUrl }: VideoPlayerProps) {
           form.reset();
           toast({
             title: 'Stream Updated',
-            description: 'The video stream has been changed.',
+            description: 'The fallback video stream has been changed.',
           });
         } catch (error) {
            toast({
@@ -68,7 +68,10 @@ export function VideoUrlForm({ setVideoUrl }: VideoPlayerProps) {
     return (
         <Card className="bg-muted/50">
           <CardHeader>
-            <CardTitle>Update Video URL</CardTitle>
+            <CardTitle>Update Fallback Video URL</CardTitle>
+            <CardDescription>
+                Set the default video that plays when nothing is scheduled.
+            </CardDescription>
           </CardHeader>
           <CardContent>
             <Form {...form}>
@@ -84,7 +87,7 @@ export function VideoUrlForm({ setVideoUrl }: VideoPlayerProps) {
                           <Input placeholder="https://drive.google.com/file/d/..." {...field} />
                         </FormControl>
                         <Button type="submit" variant="secondary">
-                           <PlayCircle className="mr-2 h-4 w-4" /> Set Stream
+                           <PlayCircle className="mr-2 h-4 w-4" /> Set Fallback Stream
                         </Button>
                       </div>
                       <FormMessage />
