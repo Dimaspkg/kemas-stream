@@ -75,7 +75,7 @@ export async function addScheduledVideo(video: Omit<Schedule, 'id'>): Promise<st
 
 export async function getScheduledVideos(): Promise<Schedule[]> {
   try {
-    const snapshot = await getDocs(scheduleCollection);
+    const snapshot = await getDocs(query(scheduleCollection));
     return snapshot.docs.map(doc => {
       const data = doc.data();
       return {
@@ -115,7 +115,7 @@ export async function getActiveContent(): Promise<FallbackContent | null> {
     try {
         const now = Timestamp.now();
         const q = query(
-            scheduleCollection,
+            collection(db, 'schedule'),
             where('startTime', '<=', now),
             where('endTime', '>=', now)
         );
