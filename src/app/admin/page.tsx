@@ -8,10 +8,14 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { format } from 'date-fns';
 import { Separator } from '@/components/ui/separator';
+import { Button } from '@/components/ui/button';
+import { Copy } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
 
 export default function AdminPage() {
     const [fallbackContent, setFallbackContent] = useState<FallbackContent | null>(null);
     const [schedules, setSchedules] = useState<Schedule[]>([]);
+    const { toast } = useToast();
 
     useEffect(() => {
       async function fetchContent() {
@@ -22,6 +26,22 @@ export default function AdminPage() {
       }
       fetchContent();
     }, []);
+
+    const handleCopyUrl = (url: string) => {
+      navigator.clipboard.writeText(url).then(() => {
+        toast({
+          title: "URL Copied",
+          description: "The content URL has been copied to your clipboard.",
+        });
+      }).catch(err => {
+        console.error('Failed to copy URL: ', err);
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: "Failed to copy URL.",
+        });
+      });
+    };
 
   return (
     <div className="flex-1 flex flex-col p-4">
@@ -79,7 +99,13 @@ export default function AdminPage() {
                         {schedule.type}
                        </Badge>
                      </div>
-                     <PreviewDialog schedule={schedule} />
+                      <div className="flex items-center gap-2">
+                        <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => handleCopyUrl(schedule.url)}>
+                           <Copy className="h-4 w-4" />
+                           <span className="sr-only">Copy URL</span>
+                        </Button>
+                        <PreviewDialog schedule={schedule} />
+                      </div>
                    </div>
                 </CardHeader>
                 <CardContent className="flex-grow p-4 pt-0">

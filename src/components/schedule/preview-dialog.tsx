@@ -29,7 +29,7 @@ export function PreviewDialog({ schedule }: { schedule: Schedule }) {
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        <Button variant="outline" size="sm">
+        <Button variant="outline" size="sm" className="h-8">
           <Eye className="mr-2 h-4 w-4" />
           Lihat
         </Button>
