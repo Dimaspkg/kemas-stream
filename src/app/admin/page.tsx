@@ -115,9 +115,6 @@ export default function AdminPage() {
                      <p className="text-xs text-muted-foreground">
                         <span className="font-semibold">End:</span> {format(schedule.endTime, "PPp")}
                     </p>
-                    <p className="text-xs text-muted-foreground mt-2 max-w-full truncate">
-                        <span className="font-semibold">URL:</span> {schedule.url}
-                    </p>
                 </CardContent>
             </Card>
             ))}
