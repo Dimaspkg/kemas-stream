@@ -10,9 +10,15 @@ export async function setVideoUrl(url: string): Promise<void> {
 }
 
 export async function getVideoUrl(): Promise<string | null> {
-  const docSnap = await getDoc(videoConfigDoc);
-  if (docSnap.exists()) {
-    return docSnap.data().url;
+  try {
+    const docSnap = await getDoc(videoConfigDoc);
+    if (docSnap.exists()) {
+      return docSnap.data().url;
+    }
+    return null;
+  } catch (error) {
+    console.error("Error fetching video URL:", error);
+    // Return a default or null value if offline or other error
+    return null;
   }
-  return null;
 }
