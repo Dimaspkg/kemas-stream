@@ -56,7 +56,7 @@ export function AuthForm({ className, mode, ...props }: AuthFormProps) {
         title: 'Logged in',
         description: "You've been successfully logged in.",
       });
-      router.push('/');
+      router.push('/admin');
     } catch (error: any) {
       toast({
         variant: 'destructive',

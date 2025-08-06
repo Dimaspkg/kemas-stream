@@ -18,7 +18,6 @@ import {
 import { useAuth } from '@/contexts/auth-context';
 import { signOut } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
-import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
 export function UserNav() {
@@ -27,11 +26,15 @@ export function UserNav() {
 
   const handleSignOut = async () => {
     await signOut(auth);
-    router.push('/');
+    router.push('/login');
   };
 
   if (!user) {
-    return null;
+    return (
+        <Button onClick={() => router.push('/login')}>
+            Sign In
+        </Button>
+    );
   }
 
   const getInitials = (email: string | null) => {
@@ -60,6 +63,9 @@ export function UserNav() {
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuGroup>
+           <DropdownMenuItem onClick={() => router.push('/admin')}>
+            Admin
+          </DropdownMenuItem>
           <DropdownMenuItem>Profile</DropdownMenuItem>
           <DropdownMenuItem>Settings</DropdownMenuItem>
         </DropdownMenuGroup>

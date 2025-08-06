@@ -2,6 +2,9 @@
 
 import { useState, useEffect } from 'react';
 import { getActiveContent, FallbackContent } from '@/services/video-service';
+import { useAuth } from '@/contexts/auth-context';
+import Link from 'next/link';
+import { Button } from '@/components/ui/button';
 
 function convertGoogleDriveLinkToDirect(url: string): string {
     if (!url) return '';
@@ -16,6 +19,7 @@ function convertGoogleDriveLinkToDirect(url: string): string {
 
 export default function Home() {
   const [activeContent, setActiveContent] = useState<FallbackContent | null>(null);
+  const { user } = useAuth();
 
   useEffect(() => {
     async function fetchActiveContent() {
@@ -73,8 +77,15 @@ export default function Home() {
   }
 
   return (
-    <div className="h-screen w-screen overflow-hidden bg-black">
+    <div className="h-screen w-screen overflow-hidden bg-black relative">
         {renderContent()}
+        {user && (
+           <div className="absolute top-4 right-4">
+             <Button asChild>
+                <Link href="/admin">Go to Admin</Link>
+             </Button>
+           </div>
+        )}
     </div>
   );
 }

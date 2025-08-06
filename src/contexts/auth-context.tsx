@@ -3,6 +3,7 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
 import { onAuthStateChanged, type User } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
+import { usePathname, useRouter } from 'next/navigation';
 import { Skeleton } from '@/components/ui/skeleton';
 
 interface AuthContextType {
@@ -15,9 +16,13 @@ const AuthContext = createContext<AuthContextType>({
   loading: true,
 });
 
+const protectedRoutes = ['/admin'];
+
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+  const pathname = usePathname();
+  const router = useRouter();
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
@@ -27,6 +32,19 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
     return () => unsubscribe();
   }, []);
+
+  useEffect(() => {
+    if (!loading) {
+      const isProtectedRoute = protectedRoutes.some(route => pathname.startsWith(route));
+      if (!user && isProtectedRoute) {
+        router.push('/login');
+      }
+      if (user && pathname === '/login') {
+        router.push('/admin');
+      }
+    }
+  }, [user, loading, pathname, router]);
+
 
   if (loading) {
     return (
