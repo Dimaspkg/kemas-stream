@@ -10,9 +10,9 @@ import { Input } from '@/components/ui/input';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { useToast } from '@/hooks/use-toast';
 import { PlayCircle } from 'lucide-react';
+import { setVideoUrl as saveVideoUrl } from '@/services/video-service';
 
 interface VideoPlayerProps {
-  videoUrl: string;
   setVideoUrl: (url: string) => void;
 }
 
@@ -29,7 +29,7 @@ function convertGoogleDriveLinkToDirect(url: string): string {
   return url;
 }
 
-export function VideoUrlForm({ setVideoUrl }: { setVideoUrl: (url: string) => void }) {
+export function VideoUrlForm({ setVideoUrl }: VideoPlayerProps) {
     const { toast } = useToast();
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
@@ -38,14 +38,23 @@ export function VideoUrlForm({ setVideoUrl }: { setVideoUrl: (url: string) => vo
         },
     });
 
-    function onSubmit(values: z.infer<typeof formSchema>) {
+    async function onSubmit(values: z.infer<typeof formSchema>) {
         const directUrl = convertGoogleDriveLinkToDirect(values.url);
-        setVideoUrl(directUrl);
-        form.reset();
-        toast({
-        title: 'Stream Updated',
-        description: 'The video stream has been changed.',
-        });
+        try {
+          await saveVideoUrl(directUrl);
+          setVideoUrl(directUrl);
+          form.reset();
+          toast({
+            title: 'Stream Updated',
+            description: 'The video stream has been changed.',
+          });
+        } catch (error) {
+           toast({
+            variant: 'destructive',
+            title: 'Error',
+            description: 'Failed to update video URL.',
+          });
+        }
     }
 
     return (

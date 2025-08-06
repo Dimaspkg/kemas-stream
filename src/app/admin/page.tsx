@@ -1,9 +1,18 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { VideoUrlForm } from '@/components/video-player';
+import { getVideoUrl } from '@/services/video-service';
 
 export default function AdminPage() {
-    const [videoUrl, setVideoUrl] = useState('https://storage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4');
+    const [videoUrl, setVideoUrl] = useState('');
+
+    useEffect(() => {
+      async function fetchVideoUrl() {
+        const url = await getVideoUrl();
+        setVideoUrl(url || 'https://storage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4');
+      }
+      fetchVideoUrl();
+    }, []);
 
   return (
     <div className="flex-1 p-8 pt-6">
@@ -12,12 +21,14 @@ export default function AdminPage() {
           <VideoUrlForm setVideoUrl={setVideoUrl} />
         </div>
         <div>
-          <div className="aspect-video w-full overflow-hidden rounded-lg bg-black">
-            <video key={videoUrl} controls autoPlay muted className="h-full w-full">
-              <source src={videoUrl} type="video/mp4" />
-              Your browser does not support the video tag.
-            </video>
-          </div>
+          {videoUrl && (
+            <div className="aspect-video w-full overflow-hidden rounded-lg bg-black">
+              <video key={videoUrl} controls autoPlay muted className="h-full w-full">
+                <source src={videoUrl} type="video/mp4" />
+                Your browser does not support the video tag.
+              </video>
+            </div>
+          )}
         </div>
       </div>
     </div>
