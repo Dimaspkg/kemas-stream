@@ -64,7 +64,7 @@ export default function Home() {
             <img 
                 src={activeContent.url} 
                 alt="Live Stream Content" 
-                className="max-h-full max-w-full object-contain"
+                className="h-full w-full object-cover"
             />
         </div>
       );

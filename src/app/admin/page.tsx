@@ -45,7 +45,7 @@ export default function AdminPage() {
                 <img 
                     src={fallbackContent.url} 
                     alt="Fallback Content" 
-                    className="max-h-full max-w-full object-contain"
+                    className="h-full w-full object-cover"
                 />
               )}
             </div>
