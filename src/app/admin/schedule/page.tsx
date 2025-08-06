@@ -240,81 +240,14 @@ function ScheduleForm({
             />
             
             {/* Start Date and Time */}
-            <div>
-              <FormLabel>Start Time</FormLabel>
-              <div className="grid grid-cols-3 gap-2 mt-1">
-                <FormField
-                    control={form.control}
-                    name="startTime"
-                    render={({ field }) => (
-                      <FormItem className="col-span-3 sm:col-span-1">
-                        <Popover>
-                          <PopoverTrigger asChild>
-                            <FormControl>
-                              <Button
-                                variant={'outline'}
-                                className={cn(
-                                  'w-full pl-3 text-left font-normal',
-                                  !field.value && 'text-muted-foreground'
-                                )}
-                              >
-                                {field.value ? format(field.value, 'PPP') : <span>Pick a date</span>}
-                                <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                              </Button>
-                            </FormControl>
-                          </PopoverTrigger>
-                          <PopoverContent className="w-auto p-0" align="start">
-                            <Calendar mode="single" selected={field.value} onSelect={field.onChange} initialFocus />
-                          </PopoverContent>
-                        </Popover>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="startHour"
-                    render={({ field }) => (
-                        <FormItem>
-                            <Select onValueChange={field.onChange} defaultValue={field.value}>
-                                <FormControl>
-                                    <SelectTrigger><SelectValue placeholder="Jam" /></SelectTrigger>
-                                </FormControl>
-                                <SelectContent>
-                                    {hours.map(hour => <SelectItem key={`start-h-${hour}`} value={hour}>{hour}</SelectItem>)}
-                                </SelectContent>
-                            </Select>
-                        </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="startMinute"
-                    render={({ field }) => (
-                        <FormItem>
-                             <Select onValueChange={field.onChange} defaultValue={field.value}>
-                                <FormControl>
-                                    <SelectTrigger><SelectValue placeholder="Menit" /></SelectTrigger>
-                                </FormControl>
-                                <SelectContent>
-                                    {minutes.map(minute => <SelectItem key={`start-m-${minute}`} value={minute}>{minute}</SelectItem>)}
-                                </SelectContent>
-                            </Select>
-                        </FormItem>
-                    )}
-                  />
-              </div>
-            </div>
-
-            {/* End Date and Time */}
-            <div>
-              <FormLabel>End Time</FormLabel>
-              <div className="grid grid-cols-3 gap-2 mt-1">
+            <div className="space-y-2">
+                <FormLabel>Start Time</FormLabel>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                   <FormField
                       control={form.control}
-                      name="endTime"
+                      name="startTime"
                       render={({ field }) => (
-                        <FormItem className="col-span-3 sm:col-span-1">
+                        <FormItem>
                           <Popover>
                             <PopoverTrigger asChild>
                               <FormControl>
@@ -340,15 +273,15 @@ function ScheduleForm({
                     />
                     <FormField
                       control={form.control}
-                      name="endHour"
+                      name="startHour"
                       render={({ field }) => (
                           <FormItem>
-                               <Select onValueChange={field.onChange} defaultValue={field.value}>
+                              <Select onValueChange={field.onChange} defaultValue={field.value}>
                                   <FormControl>
                                       <SelectTrigger><SelectValue placeholder="Jam" /></SelectTrigger>
                                   </FormControl>
                                   <SelectContent>
-                                      {hours.map(hour => <SelectItem key={`end-h-${hour}`} value={hour}>{hour}</SelectItem>)}
+                                      {hours.map(hour => <SelectItem key={`start-h-${hour}`} value={hour}>{hour}</SelectItem>)}
                                   </SelectContent>
                               </Select>
                           </FormItem>
@@ -356,24 +289,91 @@ function ScheduleForm({
                     />
                     <FormField
                       control={form.control}
-                      name="endMinute"
+                      name="startMinute"
                       render={({ field }) => (
                           <FormItem>
-                              <Select onValueChange={field.onChange} defaultValue={field.value}>
+                               <Select onValueChange={field.onChange} defaultValue={field.value}>
                                   <FormControl>
                                       <SelectTrigger><SelectValue placeholder="Menit" /></SelectTrigger>
                                   </FormControl>
                                   <SelectContent>
-                                      {minutes.map(minute => <SelectItem key={`end-m-${minute}`} value={minute}>{minute}</SelectItem>)}
+                                      {minutes.map(minute => <SelectItem key={`start-m-${minute}`} value={minute}>{minute}</SelectItem>)}
                                   </SelectContent>
                               </Select>
-                              <FormMessage />
                           </FormItem>
                       )}
                     />
+                </div>
               </div>
-               {form.formState.errors.endHour && <p className="text-sm font-medium text-destructive mt-2">{form.formState.errors.endHour.message}</p>}
-            </div>
+
+            {/* End Date and Time */}
+            <div className="space-y-2">
+                <FormLabel>End Time</FormLabel>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                    <FormField
+                        control={form.control}
+                        name="endTime"
+                        render={({ field }) => (
+                          <FormItem>
+                            <Popover>
+                              <PopoverTrigger asChild>
+                                <FormControl>
+                                  <Button
+                                    variant={'outline'}
+                                    className={cn(
+                                      'w-full pl-3 text-left font-normal',
+                                      !field.value && 'text-muted-foreground'
+                                    )}
+                                  >
+                                    {field.value ? format(field.value, 'PPP') : <span>Pick a date</span>}
+                                    <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                                  </Button>
+                                </FormControl>
+                              </PopoverTrigger>
+                              <PopoverContent className="w-auto p-0" align="start">
+                                <Calendar mode="single" selected={field.value} onSelect={field.onChange} initialFocus />
+                              </PopoverContent>
+                            </Popover>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={form.control}
+                        name="endHour"
+                        render={({ field }) => (
+                            <FormItem>
+                                 <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                    <FormControl>
+                                        <SelectTrigger><SelectValue placeholder="Jam" /></SelectTrigger>
+                                    </FormControl>
+                                    <SelectContent>
+                                        {hours.map(hour => <SelectItem key={`end-h-${hour}`} value={hour}>{hour}</SelectItem>)}
+                                    </SelectContent>
+                                </Select>
+                            </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={form.control}
+                        name="endMinute"
+                        render={({ field }) => (
+                            <FormItem>
+                                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                    <FormControl>
+                                        <SelectTrigger><SelectValue placeholder="Menit" /></SelectTrigger>
+                                    </FormControl>
+                                    <SelectContent>
+                                        {minutes.map(minute => <SelectItem key={`end-m-${minute}`} value={minute}>{minute}</SelectItem>)}
+                                    </SelectContent>
+                                </Select>
+                                <FormMessage />
+                            </FormItem>
+                        )}
+                      />
+                </div>
+                 {form.formState.errors.endHour && <p className="text-sm font-medium text-destructive mt-2">{form.formState.errors.endHour.message}</p>}
+              </div>
 
             <DialogFooter>
               <Button type="submit">Save changes</Button>
