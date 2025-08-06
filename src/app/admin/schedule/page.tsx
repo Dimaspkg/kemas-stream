@@ -5,6 +5,7 @@ import {
   addScheduledVideo,
   deleteScheduledVideo,
   getScheduledVideos,
+  isScheduleConflict,
   updateScheduledVideo,
   type Schedule
 } from '@/services/video-service';
@@ -137,6 +138,16 @@ function ScheduleForm({
     try {
       const finalStartTime = setMinutes(setHours(data.startTime, parseInt(data.startHour)), parseInt(data.startMinute));
       const finalEndTime = setMinutes(setHours(data.endTime, parseInt(data.endHour)), parseInt(data.endMinute));
+
+      const conflict = await isScheduleConflict(finalStartTime, finalEndTime, schedule?.id);
+      if (conflict) {
+          toast({
+              variant: 'destructive',
+              title: 'Jadwal Bentrok',
+              description: 'Waktu yang Anda pilih bentrok dengan jadwal lain yang sudah ada.',
+          });
+          return;
+      }
 
       const scheduleData = {
         title: data.title,

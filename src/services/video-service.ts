@@ -1,3 +1,4 @@
+
 'use server';
 
 import {
@@ -139,4 +140,19 @@ export async function getActiveContent(): Promise<FallbackContent | null> {
         console.error("Error fetching active content:", error);
         return await getFallbackContent();
     }
+}
+
+export async function isScheduleConflict(
+    startTime: Date,
+    endTime: Date,
+    excludeId?: string
+): Promise<boolean> {
+    const allSchedules = await getScheduledVideos();
+    return allSchedules.some(schedule => {
+        if (schedule.id === excludeId) {
+            return false; // Don't check against itself
+        }
+        // Check for overlap: (StartA < EndB) and (StartB < EndA)
+        return startTime < schedule.endTime && endTime > schedule.startTime;
+    });
 }
