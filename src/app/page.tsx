@@ -3,8 +3,6 @@
 import { useState, useEffect } from 'react';
 import { getActiveContent, type FallbackContent } from '@/services/video-service';
 import { useAuth } from '@/contexts/auth-context';
-import Link from 'next/link';
-import { Button } from '@/components/ui/button';
 import { onSnapshot, collection, doc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 
@@ -39,7 +37,6 @@ function onActiveContentChange(callback: (content: FallbackContent | null) => vo
 
 export default function Home() {
   const [activeContent, setActiveContent] = useState<FallbackContent | null>(null);
-  const { user } = useAuth();
   const [_, setTimer] = useState<NodeJS.Timeout | null>(null);
 
   const handleContentUpdate = (content: FallbackContent | null) => {
@@ -115,13 +112,6 @@ export default function Home() {
   return (
     <div className="h-screen w-screen overflow-hidden bg-black relative">
         {renderContent()}
-        {user && (
-           <div className="absolute top-4 right-4">
-             <Button asChild>
-                <Link href="/admin">Go to Admin</Link>
-             </Button>
-           </div>
-        )}
     </div>
   );
 }
