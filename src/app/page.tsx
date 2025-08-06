@@ -5,6 +5,10 @@ import { useState, useEffect } from 'react';
 import { getActiveContent, type FallbackContent } from '@/services/video-service';
 import { onSnapshot, collection, doc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
+import { useAuth } from '@/contexts/auth-context';
+import Link from 'next/link';
+import { Button } from '@/components/ui/button';
+import { ArrowLeft } from 'lucide-react';
 
 
 function convertGoogleDriveLinkToDirect(url: string): string {
@@ -37,6 +41,7 @@ function onActiveContentChange(callback: (content: FallbackContent | null) => vo
 
 export default function Home() {
   const [activeContent, setActiveContent] = useState<FallbackContent | null>(null);
+  const { user, loading } = useAuth();
 
   const handleContentUpdate = (content: FallbackContent | null) => {
       if (content && content.type === 'video' && content.url.includes('drive.google')) {
@@ -109,6 +114,16 @@ export default function Home() {
 
   return (
     <div className="h-screen w-screen overflow-hidden bg-black relative">
+        {user && !loading && (
+             <div className="absolute top-4 right-4 z-10">
+                <Button asChild variant="secondary">
+                    <Link href="/admin">
+                        <ArrowLeft className="mr-2 h-4 w-4" />
+                        Kembali ke Admin
+                    </Link>
+                </Button>
+            </div>
+        )}
         {renderContent()}
     </div>
   );
