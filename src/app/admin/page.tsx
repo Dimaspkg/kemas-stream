@@ -36,8 +36,9 @@ export default function AdminPage() {
                     controls 
                     autoPlay
                     loop
+                    muted
                     playsInline 
-                    className="h-full w-full"
+                    className="h-full w-full object-cover"
                   >
                     Your browser does not support the video tag.
                   </video>

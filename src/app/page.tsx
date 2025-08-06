@@ -49,6 +49,8 @@ export default function Home() {
           src={activeContent.url}
           autoPlay 
           loop
+          muted
+          controls
           playsInline
           className="h-full w-full object-cover"
         >
