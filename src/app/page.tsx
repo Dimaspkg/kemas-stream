@@ -1,10 +1,13 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { getActiveContent, FallbackContent } from '@/services/video-service';
+import { getActiveContent, type FallbackContent } from '@/services/video-service';
 import { useAuth } from '@/contexts/auth-context';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
+import { onSnapshot, collection, doc } from 'firebase/firestore';
+import { db } from '@/lib/firebase';
+
 
 function convertGoogleDriveLinkToDirect(url: string): string {
     if (!url) return '';
@@ -16,25 +19,44 @@ function convertGoogleDriveLinkToDirect(url: string): string {
     return url;
 }
 
+function onActiveContentChange(callback: (content: FallbackContent | null) => void): () => void {
+  const scheduleUnsubscribe = onSnapshot(collection(db, 'schedule'), async () => {
+    const content = await getActiveContent();
+    callback(content);
+  });
+
+  const fallbackUnsubscribe = onSnapshot(doc(db, 'settings', 'fallbackContent'), async () => {
+    const content = await getActiveContent();
+    callback(content);
+  });
+
+  return () => {
+    scheduleUnsubscribe();
+    fallbackUnsubscribe();
+  };
+}
+
 
 export default function Home() {
   const [activeContent, setActiveContent] = useState<FallbackContent | null>(null);
   const { user } = useAuth();
 
   useEffect(() => {
-    async function fetchActiveContent() {
-      const content = await getActiveContent();
-      if (content && content.type === 'video' && content.url.includes('drive.google')) {
-          content.url = convertGoogleDriveLinkToDirect(content.url);
-      }
-      setActiveContent(content);
-    }
-    
-    fetchActiveContent();
-    
-    const interval = setInterval(fetchActiveContent, 5000); // Check for new active content every 5 seconds
+    const handleContentUpdate = (content: FallbackContent | null) => {
+        if (content && content.type === 'video' && content.url.includes('drive.google')) {
+            content.url = convertGoogleDriveLinkToDirect(content.url);
+        }
+        setActiveContent(content);
+    };
 
-    return () => clearInterval(interval);
+    // Initial load
+    getActiveContent().then(handleContentUpdate);
+
+    // Set up real-time listener
+    const unsubscribe = onActiveContentChange(handleContentUpdate);
+
+    // Clean up listener on component unmount
+    return () => unsubscribe();
   }, []);
 
   const renderContent = () => {
@@ -53,8 +75,8 @@ export default function Home() {
           src={activeContent.url}
           autoPlay 
           loop
-          muted
           controls
+          muted
           playsInline
           className="h-full w-full object-cover"
         >

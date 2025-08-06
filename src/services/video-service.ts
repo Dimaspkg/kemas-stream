@@ -123,7 +123,10 @@ export async function getActiveContent(): Promise<FallbackContent | null> {
         const snapshot = await getDocs(q);
 
         if (!snapshot.empty) {
-            const activeDoc = snapshot.docs[0];
+            // Sort by start time to get the most recent one if there's an overlap
+            const activeDoc = snapshot.docs.sort((a, b) => 
+                (b.data().startTime as Timestamp).toMillis() - (a.data().startTime as Timestamp).toMillis()
+            )[0];
             const data = activeDoc.data();
             return {
                 type: data.type || 'video',
