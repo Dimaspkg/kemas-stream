@@ -1,8 +1,8 @@
+
 'use client';
 
 import { useState, useEffect } from 'react';
 import { getActiveContent, type FallbackContent } from '@/services/video-service';
-import { useAuth } from '@/contexts/auth-context';
 import { onSnapshot, collection, doc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 
@@ -37,7 +37,6 @@ function onActiveContentChange(callback: (content: FallbackContent | null) => vo
 
 export default function Home() {
   const [activeContent, setActiveContent] = useState<FallbackContent | null>(null);
-  const [_, setTimer] = useState<NodeJS.Timeout | null>(null);
 
   const handleContentUpdate = (content: FallbackContent | null) => {
       if (content && content.type === 'video' && content.url.includes('drive.google')) {
@@ -60,7 +59,6 @@ export default function Home() {
     
     // Also poll every 5 seconds to catch time-based changes
     const interval = setInterval(checkForScheduledContent, 5000);
-    setTimer(interval);
 
 
     // Clean up listener and timer on component unmount
