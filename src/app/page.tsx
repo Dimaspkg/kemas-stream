@@ -19,7 +19,7 @@ export default function Home() {
       <main className="flex-1 flex items-stretch">
         <div className="flex-1">
           {videoUrl && (
-            <video key={videoUrl} controls autoPlay className="h-full w-full object-cover">
+            <video key={videoUrl} autoPlay loop controls className="h-full w-full object-cover">
               <source src={videoUrl} type="video/mp4" />
               Your browser does not support the video tag.
             </video>
