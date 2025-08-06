@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { FallbackForm } from '@/components/video-player';
 import { getFallbackContent, type FallbackContent, getScheduledVideos, type Schedule } from '@/services/video-service';
 import { PreviewDialog } from '@/components/schedule/preview-dialog';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { format } from 'date-fns';
 import {
@@ -30,7 +30,7 @@ export default function AdminPage() {
     }, []);
 
   return (
-    <div className="flex-1 p-4">
+    <div className="flex-1 flex flex-col p-4">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
         <div>
           <FallbackForm setFallbackContentOnPage={setFallbackContent} />
@@ -62,7 +62,7 @@ export default function AdminPage() {
           )}
         </div>
       </div>
-       <div className="mt-12">
+       <div className="mt-12 flex-1 flex flex-col">
         <div className="mb-8">
             <h2 className="text-2xl font-bold tracking-tight">Upcoming Scheduled Content</h2>
             <p className="text-muted-foreground">
