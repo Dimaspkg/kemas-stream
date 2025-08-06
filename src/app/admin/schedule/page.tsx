@@ -63,19 +63,30 @@ import {
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Badge } from '@/components/ui/badge';
 
+const handleDateWithTime = (date: Date | undefined, timeStr: string) => {
+    if (!date) return undefined;
+    const [hours, minutes] = timeStr.split(':').map(Number);
+    if (isNaN(hours) || isNaN(minutes)) return undefined;
+    return setMinutes(setHours(date, hours), minutes);
+};
+
 const scheduleSchema = z
   .object({
     title: z.string().min(1, 'Title is required.'),
     type: z.enum(['video', 'image']),
     url: z.string().url('Please enter a valid URL.'),
-    startTime: z.date({ required_error: 'Start date and time is required.' }),
-    endTime: z.date({ required_error: 'End date and time is required.' }),
+    startTime: z.date({ required_error: 'Start date is required.' }),
+    endTime: z.date({ required_error: 'End date is required.' }),
     startTimeStr: z.string().regex(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/, "Invalid time format (HH:mm)"),
     endTimeStr: z.string().regex(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/, "Invalid time format (HH:mm)"),
   })
-  .refine((data) => data.endTime > data.startTime, {
+  .refine((data) => {
+      const start = handleDateWithTime(data.startTime, data.startTimeStr);
+      const end = handleDateWithTime(data.endTime, data.endTimeStr);
+      return end && start ? end > start : false;
+  }, {
     message: 'End time must be after start time.',
-    path: ['endTime'],
+    path: ['endTimeStr'],
   });
 
 type ScheduleFormValues = z.infer<typeof scheduleSchema>;
@@ -113,11 +124,6 @@ function ScheduleForm({
   
   const selectedType = form.watch('type');
 
-  const handleDateWithTime = (date: Date | undefined, timeStr: string) => {
-    if (!date) return date;
-    const [hours, minutes] = timeStr.split(':').map(Number);
-    return setMinutes(setHours(date, hours), minutes);
-  }
 
   const onSubmit = async (data: ScheduleFormValues) => {
     try {
@@ -127,11 +133,6 @@ function ScheduleForm({
        if (!finalStartTime || !finalEndTime) {
            toast({ variant: 'destructive', title: 'Error', description: 'Invalid date or time.' });
            return;
-       }
-       
-       if (finalEndTime <= finalStartTime) {
-          form.setError('endTime', { message: 'End time must be after start time.' });
-          return;
        }
 
       const scheduleData = {
