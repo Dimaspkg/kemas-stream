@@ -29,23 +29,30 @@ function CountdownTimer({ startTime, endTime }: { startTime: Date; endTime: Date
     const minutes = Math.floor((diffStart % (60 * 60)) / 60);
     const seconds = diffStart % 60;
     return (
-      <div className="text-xs text-muted-foreground mt-2">
-        <span className="font-semibold text-primary">Akan Datang:</span> {days > 0 && `${days}h `}{`${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`}
+      <div className="text-right">
+        <div className="text-xs text-muted-foreground">Akan Datang Dalam:</div>
+        <div className="text-lg font-semibold text-primary">
+            {days > 0 && `${days}h `}{`${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`}
+        </div>
       </div>
     );
   }
 
   if (diffEnd > 0) {
     return (
-      <div className="text-xs font-semibold text-green-600 mt-2">
-        Sedang Tayang
+      <div className="text-right">
+          <div className="text-sm font-semibold text-green-600">
+            Sedang Tayang
+          </div>
       </div>
     );
   }
 
   return (
-    <div className="text-xs text-muted-foreground mt-2">
-      Telah Selesai
+    <div className="text-right">
+        <div className="text-sm text-muted-foreground">
+            Telah Selesai
+        </div>
     </div>
   );
 }
@@ -148,13 +155,19 @@ export default function AdminPage() {
                 </CardHeader>
                 <Separator />
                 <CardContent className="flex-grow p-4">
-                    <p className="text-xs text-muted-foreground">
-                        <span className="font-semibold">Start:</span> {format(schedule.startTime, "PPp")}
-                    </p>
-                     <p className="text-xs text-muted-foreground">
-                        <span className="font-semibold">End:</span> {format(schedule.endTime, "PPp")}
-                    </p>
-                    <CountdownTimer startTime={schedule.startTime} endTime={schedule.endTime} />
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <p className="text-xs text-muted-foreground">
+                          <span className="font-semibold">Start:</span> {format(schedule.startTime, "PPp")}
+                      </p>
+                      <p className="text-xs text-muted-foreground mt-1">
+                          <span className="font-semibold">End:</span> {format(schedule.endTime, "PPp")}
+                      </p>
+                    </div>
+                    <div className="flex justify-end items-center">
+                       <CountdownTimer startTime={schedule.startTime} endTime={schedule.endTime} />
+                    </div>
+                  </div>
                 </CardContent>
             </Card>
             ))}
