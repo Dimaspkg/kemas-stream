@@ -14,6 +14,9 @@ function onContentChange(callback: (content: FallbackContent | null) => void): (
     callback(content);
   };
 
+  // Initial call
+  handleUpdate();
+
   const scheduleUnsubscribe = onSnapshot(collection(db, 'schedule'), handleUpdate);
   const fallbackUnsubscribe = onSnapshot(doc(db, 'settings', 'fallbackContent'), handleUpdate);
 
@@ -28,19 +31,14 @@ export default function Home() {
   const [activeContent, setActiveContent] = useState<FallbackContent | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  const handleContentUpdate = (content: FallbackContent | null) => {
-      setActiveContent(content);
-      setIsLoading(false);
-  };
-  
   useEffect(() => {
-    // Initial load
-    getActiveContent().then(handleContentUpdate);
-
-    // Set up real-time listener for any changes in schedule or fallback
+    const handleContentUpdate = (content: FallbackContent | null) => {
+        setActiveContent(content);
+        setIsLoading(false);
+    };
+    
     const unsubscribe = onContentChange(handleContentUpdate);
 
-    // Clean up listener on component unmount
     return () => unsubscribe();
   }, []);
 
