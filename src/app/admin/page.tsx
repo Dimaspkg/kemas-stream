@@ -24,12 +24,6 @@ export default function AdminPage() {
 
   return (
     <div className="flex-1 p-4">
-       <div className="mb-8">
-        <h2 className="text-2xl font-bold tracking-tight">Fallback Content Stream</h2>
-        <p className="text-muted-foreground">
-          This video or image will be shown when no other stream is scheduled.
-        </p>
-      </div>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
         <div>
           <FallbackForm setFallbackContentOnPage={setFallbackContent} />
