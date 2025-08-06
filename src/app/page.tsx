@@ -3,13 +3,31 @@
 import { useState, useEffect } from 'react';
 import { getVideoUrl } from '@/services/video-service';
 
+function convertGoogleDriveLinkToDirect(url: string): string {
+    if (!url) return '';
+    const fileIdMatch = url.match(/drive\.google\.com\/file\/d\/([a-zA-Z0-9_-]+)/);
+    if (fileIdMatch && fileIdMatch[1]) {
+        const fileId = fileIdMatch[1];
+        return `https://drive.google.com/uc?export=download&id=${fileId}`;
+    }
+    
+    const ucIdMatch = url.match(/uc\?.*id=([a-zA-Z0-9_-]+)/);
+    if (ucIdMatch && ucIdMatch[1]) {
+        return url;
+    }
+    
+    return url;
+}
+
+
 export default function Home() {
   const [videoUrl, setVideoUrl] = useState('');
 
   useEffect(() => {
     async function fetchVideoUrl() {
       const url = await getVideoUrl();
-      setVideoUrl(url || 'https://drive.google.com/uc?export=download&id=1IpWBVYgzV5s4oydxy0ZiCn4zMsM8kYZc');
+      const directUrl = convertGoogleDriveLinkToDirect(url || 'https://drive.google.com/uc?export=download&id=1IpWBVYgzV5s4oydxy0ZiCn4zMsM8kYZc');
+      setVideoUrl(directUrl);
     }
     fetchVideoUrl();
   }, []);
@@ -25,7 +43,8 @@ export default function Home() {
               autoPlay 
               loop 
               muted 
-              playsInline 
+              playsInline
+              controls
               className="h-full w-full object-cover"
             >
               Your browser does not support the video tag.

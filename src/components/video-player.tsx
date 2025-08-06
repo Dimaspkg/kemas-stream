@@ -21,25 +21,19 @@ const formSchema = z.object({
 });
 
 function convertGoogleDriveLinkToDirect(url: string): string {
-  let fileId = null;
-  
-  // Regex for standard share links: https://drive.google.com/file/d/FILE_ID/view?usp=sharing
-  const standardMatch = url.match(/drive\.google\.com\/file\/d\/([a-zA-Z0-9_-]+)/);
-  if (standardMatch && standardMatch[1]) {
-    fileId = standardMatch[1];
-  }
-
-  // Regex for direct download links: https://drive.google.com/uc?export=download&id=FILE_ID
-  const ucMatch = url.match(/uc\?.*id=([a-zA-Z0-9_-]+)/);
-  if (ucMatch && ucMatch[1]) {
-    fileId = ucMatch[1];
-  }
-  
-  if (fileId) {
+  const fileIdMatch = url.match(/drive\.google\.com\/file\/d\/([a-zA-Z0-9_-]+)/);
+  if (fileIdMatch && fileIdMatch[1]) {
+    const fileId = fileIdMatch[1];
     return `https://drive.google.com/uc?export=download&id=${fileId}`;
   }
   
-  // If no match, return the original URL
+  const ucIdMatch = url.match(/uc\?.*id=([a-zA-Z0-9_-]+)/);
+  if (ucIdMatch && ucIdMatch[1]) {
+    // It's already in the correct format
+    return url;
+  }
+  
+  // If no match, return the original URL as a fallback
   return url;
 }
 
@@ -56,7 +50,7 @@ export function VideoUrlForm({ setVideoUrl }: VideoPlayerProps) {
         const directUrl = convertGoogleDriveLinkToDirect(values.url);
         try {
           await saveVideoUrl(directUrl);
-          setVideoUrl(directUrl); // This will now trigger the useEffect in admin page to refetch
+          setVideoUrl(directUrl);
           form.reset();
           toast({
             title: 'Stream Updated',
