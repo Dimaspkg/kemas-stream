@@ -7,6 +7,13 @@ import { PreviewDialog } from '@/components/schedule/preview-dialog';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { format } from 'date-fns';
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from '@/components/ui/carousel';
 
 export default function AdminPage() {
     const [fallbackContent, setFallbackContent] = useState<FallbackContent | null>(null);
@@ -63,9 +70,17 @@ export default function AdminPage() {
             </p>
         </div>
         {schedules.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {schedules.map(schedule => (
-                    <Card key={schedule.id}>
+          <Carousel
+              opts={{
+                align: "start",
+              }}
+              className="w-full"
+            >
+              <CarouselContent>
+                {schedules.map((schedule) => (
+                  <CarouselItem key={schedule.id} className="md:basis-1/2 lg:basis-1/3">
+                    <div className="p-1 h-full">
+                       <Card className="h-full flex flex-col">
                         <CardHeader>
                            <div className="flex justify-between items-start">
                              <div>
@@ -77,7 +92,7 @@ export default function AdminPage() {
                              <PreviewDialog schedule={schedule} />
                            </div>
                         </CardHeader>
-                        <CardContent>
+                        <CardContent className="flex-grow">
                             <p className="text-sm text-muted-foreground">
                                 <span className="font-semibold">Start:</span> {format(schedule.startTime, "PPpp")}
                             </p>
@@ -89,8 +104,13 @@ export default function AdminPage() {
                             </p>
                         </CardContent>
                     </Card>
+                    </div>
+                  </CarouselItem>
                 ))}
-            </div>
+              </CarouselContent>
+              <CarouselPrevious />
+              <CarouselNext />
+            </Carousel>
         ) : (
              <div className="flex items-center justify-center h-24 border-2 border-dashed rounded-lg">
                 <p className="text-muted-foreground">No content scheduled yet.</p>
