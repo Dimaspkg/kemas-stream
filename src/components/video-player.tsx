@@ -42,7 +42,7 @@ export function VideoUrlForm({ setVideoUrl }: VideoPlayerProps) {
         const directUrl = convertGoogleDriveLinkToDirect(values.url);
         try {
           await saveVideoUrl(directUrl);
-          setVideoUrl(directUrl);
+          setVideoUrl(directUrl); // This will now trigger the useEffect in admin page to refetch
           form.reset();
           toast({
             title: 'Stream Updated',

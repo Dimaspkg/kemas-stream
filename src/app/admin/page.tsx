@@ -5,20 +5,23 @@ import { getVideoUrl } from '@/services/video-service';
 
 export default function AdminPage() {
     const [videoUrl, setVideoUrl] = useState('');
+    const [videoUrlFromDb, setVideoUrlFromDb] = useState('');
 
     useEffect(() => {
       async function fetchVideoUrl() {
         const url = await getVideoUrl();
-        setVideoUrl(url || 'https://storage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4');
+        const initialUrl = url || 'https://storage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4';
+        setVideoUrl(initialUrl);
+        setVideoUrlFromDb(initialUrl);
       }
       fetchVideoUrl();
-    }, []);
+    }, [videoUrlFromDb]);
 
   return (
     <div className="flex-1 p-8 pt-6">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
         <div>
-          <VideoUrlForm setVideoUrl={setVideoUrl} />
+          <VideoUrlForm setVideoUrl={setVideoUrlFromDb} />
         </div>
         <div>
           {videoUrl && (
