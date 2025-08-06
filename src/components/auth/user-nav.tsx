@@ -33,11 +33,8 @@ export function UserNav() {
   if (!user) {
     return (
       <div className="flex items-center gap-2">
-        <Button asChild variant="ghost">
+        <Button asChild variant="default">
           <Link href="/login">Log In</Link>
-        </Button>
-        <Button asChild>
-          <Link href="/signup">Sign Up</Link>
         </Button>
       </div>
     );
