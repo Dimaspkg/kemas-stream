@@ -114,7 +114,7 @@ export async function deleteScheduledVideo(id: string): Promise<void> {
 
 export async function getActiveContent(): Promise<FallbackContent | null> {
     try {
-        const now = Timestamp.now();
+        const now = new Date(); // Use server's current time
         const q = query(
             collection(db, 'schedule'),
             where('startTime', '<=', now),
