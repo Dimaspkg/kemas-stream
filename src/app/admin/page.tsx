@@ -146,7 +146,8 @@ export default function AdminPage() {
                       </div>
                    </div>
                 </CardHeader>
-                <CardContent className="flex-grow p-4 pt-0">
+                <Separator />
+                <CardContent className="flex-grow p-4">
                     <p className="text-xs text-muted-foreground">
                         <span className="font-semibold">Start:</span> {format(schedule.startTime, "PPp")}
                     </p>
