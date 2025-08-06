@@ -119,10 +119,10 @@ export function FallbackForm({ setFallbackContentOnPage }: FallbackFormProps) {
                   name="url"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>{selectedType === 'video' ? 'Google Drive Video URL' : 'Image URL'}</FormLabel>
+                      <FormLabel>{selectedType === 'video' ? 'Video URL' : 'Image URL'}</FormLabel>
                       <div className="flex gap-2">
                         <FormControl>
-                          <Input placeholder={selectedType === 'video' ? "https://drive.google.com/file/d/..." : "https://example.com/image.png"} {...field} />
+                          <Input placeholder={selectedType === 'video' ? "https://example.com/video.mp4" : "https://example.com/image.png"} {...field} />
                         </FormControl>
                         <Button type="submit" variant="secondary">
                            {selectedType === 'video' ? <PlayCircle className="mr-2 h-4 w-4" /> : <ImageIcon className="mr-2 h-4 w-4" />}

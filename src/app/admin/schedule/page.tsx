@@ -228,9 +228,9 @@ function ScheduleForm({
               name="url"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>{selectedType === 'video' ? 'Google Drive Video URL' : 'Image URL'}</FormLabel>
+                  <FormLabel>{selectedType === 'video' ? 'Video URL' : 'Image URL'}</FormLabel>
                   <FormControl>
-                    <Input placeholder={selectedType === 'video' ? 'https://drive.google.com/file/d/...' : 'https://example.com/image.png'} {...field} />
+                    <Input placeholder={selectedType === 'video' ? 'https://example.com/video.mp4' : 'https://example.com/image.png'} {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
