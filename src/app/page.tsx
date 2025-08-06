@@ -18,27 +18,18 @@ function convertGoogleDriveLinkToDirect(url: string): string {
     return url;
 }
 
-function onActiveContentChange(callback: (content: FallbackContent | null) => void): () => void {
-  const scheduleUnsubscribe = onSnapshot(collection(db, 'schedule'), async () => {
+function onContentChange(callback: (content: FallbackContent | null) => void): () => void {
+  const handleUpdate = async () => {
     const content = await getActiveContent();
     callback(content);
-  });
+  };
 
-  const fallbackUnsubscribe = onSnapshot(doc(db, 'settings', 'fallbackContent'), async () => {
-    const content = await getActiveContent();
-    callback(content);
-  });
-
-  // Also check on an interval to handle time-based changes without db updates
-  const intervalId = setInterval(async () => {
-    const content = await getActiveContent();
-    callback(content);
-  }, 5000); // Check every 5 seconds
+  const scheduleUnsubscribe = onSnapshot(collection(db, 'schedule'), handleUpdate);
+  const fallbackUnsubscribe = onSnapshot(doc(db, 'settings', 'fallbackContent'), handleUpdate);
 
   return () => {
     scheduleUnsubscribe();
     fallbackUnsubscribe();
-    clearInterval(intervalId);
   };
 }
 
@@ -60,7 +51,7 @@ export default function Home() {
     getActiveContent().then(handleContentUpdate);
 
     // Set up real-time listener for any changes in schedule or fallback
-    const unsubscribe = onActiveContentChange(handleContentUpdate);
+    const unsubscribe = onContentChange(handleContentUpdate);
 
     // Clean up listener on component unmount
     return () => unsubscribe();
