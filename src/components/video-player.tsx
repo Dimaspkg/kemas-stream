@@ -26,51 +26,34 @@ function convertGoogleDriveLinkToDirect(url: string): string {
   if (match && match[1]) {
     return `https://drive.google.com/uc?export=download&id=${match[1]}`;
   }
-  // If it's not a standard sharable link, assume it's a direct link or other format and return it as is.
   return url;
 }
 
-export function VideoPlayer({ videoUrl, setVideoUrl }: VideoPlayerProps) {
-  const { toast } = useToast();
-  const videoRef = React.useRef<HTMLVideoElement>(null);
-
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
-    defaultValues: {
-      url: '',
-    },
-  });
-
-  function onSubmit(values: z.infer<typeof formSchema>) {
-    const directUrl = convertGoogleDriveLinkToDirect(values.url);
-    setVideoUrl(directUrl);
-    form.reset();
-    toast({
-      title: 'Stream Updated',
-      description: 'The video stream has been changed.',
+export function VideoUrlForm({ setVideoUrl }: { setVideoUrl: (url: string) => void }) {
+    const { toast } = useToast();
+    const form = useForm<z.infer<typeof formSchema>>({
+        resolver: zodResolver(formSchema),
+        defaultValues: {
+        url: '',
+        },
     });
-  }
-  
-  React.useEffect(() => {
-    if (videoRef.current) {
-        videoRef.current.load();
-    }
-  }, [videoUrl]);
 
-  return (
-    <Card className="w-full">
-      <CardHeader>
-        <CardTitle>Live Stream</CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        <div className="aspect-video w-full overflow-hidden rounded-lg bg-black">
-          <video ref={videoRef} key={videoUrl} controls autoPlay muted className="h-full w-full">
-            <source src={videoUrl} type="video/mp4" />
-            Your browser does not support the video tag.
-          </video>
-        </div>
+    function onSubmit(values: z.infer<typeof formSchema>) {
+        const directUrl = convertGoogleDriveLinkToDirect(values.url);
+        setVideoUrl(directUrl);
+        form.reset();
+        toast({
+        title: 'Stream Updated',
+        description: 'The video stream has been changed.',
+        });
+    }
+
+    return (
         <Card className="bg-muted/50">
-          <CardContent className="p-4">
+          <CardHeader>
+            <CardTitle>Update Video URL</CardTitle>
+          </CardHeader>
+          <CardContent>
             <Form {...form}>
               <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
                 <FormField
@@ -95,7 +78,5 @@ export function VideoPlayer({ videoUrl, setVideoUrl }: VideoPlayerProps) {
             </Form>
           </CardContent>
         </Card>
-      </CardContent>
-    </Card>
-  );
+    )
 }
