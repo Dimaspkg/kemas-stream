@@ -5,6 +5,7 @@ import { useState, useEffect } from 'react';
 import { getActiveContent, type FallbackContent } from '@/services/video-service';
 import { onSnapshot, collection, doc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
+import { Skeleton } from '@/components/ui/skeleton';
 
 
 function convertGoogleDriveLinkToDirect(url: string): string {
@@ -28,51 +29,56 @@ function onActiveContentChange(callback: (content: FallbackContent | null) => vo
     callback(content);
   });
 
+  // Also check on an interval to handle time-based changes without db updates
+  const intervalId = setInterval(async () => {
+    const content = await getActiveContent();
+    callback(content);
+  }, 5000); // Check every 5 seconds
+
   return () => {
     scheduleUnsubscribe();
     fallbackUnsubscribe();
+    clearInterval(intervalId);
   };
 }
 
 
 export default function Home() {
   const [activeContent, setActiveContent] = useState<FallbackContent | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   const handleContentUpdate = (content: FallbackContent | null) => {
       if (content && content.type === 'video' && content.url.includes('drive.google')) {
           content.url = convertGoogleDriveLinkToDirect(content.url);
       }
       setActiveContent(content);
+      setIsLoading(false);
   };
-
-  const checkForScheduledContent = async () => {
-    const content = await getActiveContent();
-    handleContentUpdate(content);
-  };
-
+  
   useEffect(() => {
     // Initial load
-    checkForScheduledContent();
+    getActiveContent().then(handleContentUpdate);
 
     // Set up real-time listener for any changes in schedule or fallback
     const unsubscribe = onActiveContentChange(handleContentUpdate);
-    
-    // Also poll every 5 seconds to catch time-based changes
-    const interval = setInterval(checkForScheduledContent, 5000);
 
-
-    // Clean up listener and timer on component unmount
-    return () => {
-        unsubscribe();
-        clearInterval(interval);
-    };
+    // Clean up listener on component unmount
+    return () => unsubscribe();
   }, []);
 
   const renderContent = () => {
+    if (isLoading) {
+       return (
+        <div className="flex h-full w-full items-center justify-center bg-black">
+          <Skeleton className="h-full w-full" />
+        </div>
+      );
+    }
+    
     if (!activeContent || !activeContent.url) {
       return (
         <div className="flex h-full w-full items-center justify-center bg-black text-white">
-          <p>No scheduled stream is active at the moment.</p>
+          <p>No content is scheduled to play at the moment.</p>
         </div>
       );
     }
