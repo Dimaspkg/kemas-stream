@@ -8,7 +8,7 @@ export default function AdminPage() {
   return (
     <div className="flex-1 space-y-4 p-8 pt-6">
         <VideoUrlForm setVideoUrl={setVideoUrl} />
-        <div className="aspect-video w-full overflow-hidden rounded-lg bg-black mt-4">
+        <div className="aspect-video w-full max-w-3xl mx-auto overflow-hidden rounded-lg bg-black mt-4">
             <video key={videoUrl} controls autoPlay muted className="h-full w-full">
             <source src={videoUrl} type="video/mp4" />
             Your browser does not support the video tag.
