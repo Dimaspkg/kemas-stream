@@ -9,7 +9,7 @@ export default function AdminLayout({
   return (
     <>
       <div className="flex-col md:flex">
-        <div className="border-b">
+        <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
           <div className="flex h-16 items-center px-4">
             <h1 className="text-xl font-bold tracking-tight mr-6">Admin Panel</h1>
             <MainNav className="mx-6" />
@@ -17,7 +17,7 @@ export default function AdminLayout({
               <UserNav />
             </div>
           </div>
-        </div>
+        </header>
         <div className="flex-1">{children}</div>
       </div>
     </>
