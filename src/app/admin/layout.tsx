@@ -1,5 +1,6 @@
 import { UserNav } from '@/components/auth/user-nav';
 import { MainNav } from '@/components/main-nav';
+import { ThemeToggle } from '@/components/theme-toggle';
 
 export default function AdminLayout({
   children,
@@ -13,6 +14,7 @@ export default function AdminLayout({
           <h1 className="text-xl font-bold tracking-tight mr-6">Admin Panel</h1>
           <MainNav className="mx-6" />
           <div className="ml-auto flex items-center space-x-4">
+            <ThemeToggle />
             <UserNav />
           </div>
         </div>
