@@ -31,13 +31,7 @@ export function UserNav() {
   };
 
   if (!user) {
-    return (
-      <div className="flex items-center gap-2">
-        <Button asChild variant="default">
-          <Link href="/login">Log In</Link>
-        </Button>
-      </div>
-    );
+    return null;
   }
 
   const getInitials = (email: string | null) => {
