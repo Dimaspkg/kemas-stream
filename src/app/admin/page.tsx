@@ -10,7 +10,7 @@ export default function AdminPage() {
     useEffect(() => {
       async function fetchVideoUrl() {
         const url = await getVideoUrl();
-        const initialUrl = url || 'https://storage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4';
+        const initialUrl = url || 'https://drive.google.com/uc?export=download&id=1IpWBVYgzV5s4oydxy0ZiCn4zMsM8kYZc';
         setVideoUrl(initialUrl);
         setVideoUrlFromDb(initialUrl);
       }

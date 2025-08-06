@@ -9,7 +9,7 @@ export default function Home() {
   useEffect(() => {
     async function fetchVideoUrl() {
       const url = await getVideoUrl();
-      setVideoUrl(url || 'https://storage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4');
+      setVideoUrl(url || 'https://drive.google.com/uc?export=download&id=1IpWBVYgzV5s4oydxy0ZiCn4zMsM8kYZc');
     }
     fetchVideoUrl();
   }, []);
@@ -19,7 +19,7 @@ export default function Home() {
       <main className="flex-1 flex items-stretch">
         <div className="flex-1">
           {videoUrl && (
-            <video key={videoUrl} autoPlay loop muted controls playsInline className="h-full w-full object-cover">
+            <video key={videoUrl} autoPlay loop muted playsInline className="h-full w-full object-cover">
               <source src={videoUrl} type="video/mp4" />
               Your browser does not support the video tag.
             </video>
