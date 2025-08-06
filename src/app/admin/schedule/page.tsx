@@ -42,7 +42,7 @@ import {
 import { CalendarIcon, MoreHorizontal, PlusCircle } from 'lucide-react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
-import { format, setHours, setMinutes } from 'date-fns';
+import { format, setHours, setMinutes, getHours, getMinutes } from 'date-fns';
 import { cn } from '@/lib/utils';
 import {
   DropdownMenu,
@@ -60,18 +60,12 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-  AlertDialogTrigger,
+  AlertDialogTrigger
 } from '@/components/ui/alert-dialog';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Badge } from '@/components/ui/badge';
 import { PreviewDialog } from '@/components/schedule/preview-dialog';
-
-const handleDateWithTime = (date: Date | undefined, timeStr: string) => {
-    if (!date) return undefined;
-    const [hours, minutes] = timeStr.split(':').map(Number);
-    if (isNaN(hours) || isNaN(minutes)) return undefined;
-    return setMinutes(setHours(date, hours), minutes);
-};
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 const scheduleSchema = z
   .object({
@@ -80,19 +74,26 @@ const scheduleSchema = z
     url: z.string().url('Please enter a valid URL.'),
     startTime: z.date({ required_error: 'Start date is required.' }),
     endTime: z.date({ required_error: 'End date is required.' }),
-    startTimeStr: z.string().regex(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/, "Invalid time format (HH:mm)"),
-    endTimeStr: z.string().regex(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/, "Invalid time format (HH:mm)"),
+    startHour: z.string(),
+    startMinute: z.string(),
+    endHour: z.string(),
+    endMinute: z.string(),
   })
   .refine((data) => {
-      const start = handleDateWithTime(data.startTime, data.startTimeStr);
-      const end = handleDateWithTime(data.endTime, data.endTimeStr);
-      return end && start ? end > start : false;
+    if (!data.startTime || !data.endTime) return true; // Let required fields handle this
+    const start = setMinutes(setHours(data.startTime, parseInt(data.startHour)), parseInt(data.startMinute));
+    const end = setMinutes(setHours(data.endTime, parseInt(data.endHour)), parseInt(data.endMinute));
+    return end > start;
   }, {
     message: 'End time must be after start time.',
-    path: ['endTimeStr'],
+    path: ['endHour'], // You can also point to a more general path if needed
   });
 
+
 type ScheduleFormValues = z.infer<typeof scheduleSchema>;
+
+const hours = Array.from({ length: 24 }, (_, i) => i.toString().padStart(2, '0'));
+const minutes = Array.from({ length: 60 / 5 }, (_, i) => (i * 5).toString().padStart(2, '0'));
 
 function ScheduleForm({
   schedule,
@@ -110,14 +111,18 @@ function ScheduleForm({
       type: schedule.type,
       startTime: schedule.startTime,
       endTime: schedule.endTime,
-      startTimeStr: format(schedule.startTime, "HH:mm"),
-      endTimeStr: format(schedule.endTime, "HH:mm"),
+      startHour: getHours(schedule.startTime).toString().padStart(2, '0'),
+      startMinute: getMinutes(schedule.startTime).toString().padStart(2, '0'),
+      endHour: getHours(schedule.endTime).toString().padStart(2, '0'),
+      endMinute: getMinutes(schedule.endTime).toString().padStart(2, '0'),
   } : {
       title: '',
       url: '',
       type: 'video',
-      startTimeStr: '09:00',
-      endTimeStr: '17:00',
+      startHour: '09',
+      startMinute: '00',
+      endHour: '17',
+      endMinute: '00',
   };
 
   const form = useForm<ScheduleFormValues>({
@@ -130,13 +135,8 @@ function ScheduleForm({
 
   const onSubmit = async (data: ScheduleFormValues) => {
     try {
-       const finalStartTime = handleDateWithTime(data.startTime, data.startTimeStr);
-       const finalEndTime = handleDateWithTime(data.endTime, data.endTimeStr);
-
-       if (!finalStartTime || !finalEndTime) {
-           toast({ variant: 'destructive', title: 'Error', description: 'Invalid date or time.' });
-           return;
-       }
+      const finalStartTime = setMinutes(setHours(data.startTime, parseInt(data.startHour)), parseInt(data.startMinute));
+      const finalEndTime = setMinutes(setHours(data.endTime, parseInt(data.endHour)), parseInt(data.endMinute));
 
       const scheduleData = {
         title: data.title,
@@ -173,7 +173,7 @@ function ScheduleForm({
           </Button>
         )}
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>{schedule ? 'Edit' : 'Add'} Schedule</DialogTitle>
           <DialogDescription>
@@ -238,112 +238,143 @@ function ScheduleForm({
                 </FormItem>
               )}
             />
-            <div className="grid grid-cols-2 gap-4">
-               <FormField
-                  control={form.control}
-                  name="startTime"
-                  render={({ field }) => (
-                    <FormItem className="flex flex-col">
-                      <FormLabel>Start Date</FormLabel>
-                      <Popover>
-                        <PopoverTrigger asChild>
-                          <FormControl>
-                            <Button
-                              variant={'outline'}
-                              className={cn(
-                                'pl-3 text-left font-normal',
-                                !field.value && 'text-muted-foreground'
-                              )}
-                            >
-                              {field.value ? (
-                                format(field.value, 'PPP')
-                              ) : (
-                                <span>Pick a date</span>
-                              )}
-                              <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                            </Button>
-                          </FormControl>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-auto p-0" align="start">
-                          <Calendar
-                            mode="single"
-                            selected={field.value}
-                            onSelect={field.onChange}
-                            initialFocus
-                          />
-                        </PopoverContent>
-                      </Popover>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                 <FormField
-                  control={form.control}
-                  name="startTimeStr"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Start Time (24h)</FormLabel>
-                      <FormControl>
-                        <Input placeholder="HH:mm" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+            
+            {/* Start Date and Time */}
+            <div>
+              <FormLabel>Start Time</FormLabel>
+              <div className="grid grid-cols-3 gap-2 mt-1">
+                <FormField
+                    control={form.control}
+                    name="startTime"
+                    render={({ field }) => (
+                      <FormItem className="col-span-3 sm:col-span-1">
+                        <Popover>
+                          <PopoverTrigger asChild>
+                            <FormControl>
+                              <Button
+                                variant={'outline'}
+                                className={cn(
+                                  'w-full pl-3 text-left font-normal',
+                                  !field.value && 'text-muted-foreground'
+                                )}
+                              >
+                                {field.value ? format(field.value, 'PPP') : <span>Pick a date</span>}
+                                <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                              </Button>
+                            </FormControl>
+                          </PopoverTrigger>
+                          <PopoverContent className="w-auto p-0" align="start">
+                            <Calendar mode="single" selected={field.value} onSelect={field.onChange} initialFocus />
+                          </PopoverContent>
+                        </Popover>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="startHour"
+                    render={({ field }) => (
+                        <FormItem>
+                            <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                <FormControl>
+                                    <SelectTrigger><SelectValue placeholder="Jam" /></SelectTrigger>
+                                </FormControl>
+                                <SelectContent>
+                                    {hours.map(hour => <SelectItem key={`start-h-${hour}`} value={hour}>{hour}</SelectItem>)}
+                                </SelectContent>
+                            </Select>
+                        </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="startMinute"
+                    render={({ field }) => (
+                        <FormItem>
+                             <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                <FormControl>
+                                    <SelectTrigger><SelectValue placeholder="Menit" /></SelectTrigger>
+                                </FormControl>
+                                <SelectContent>
+                                    {minutes.map(minute => <SelectItem key={`start-m-${minute}`} value={minute}>{minute}</SelectItem>)}
+                                </SelectContent>
+                            </Select>
+                        </FormItem>
+                    )}
+                  />
+              </div>
             </div>
-            <div className="grid grid-cols-2 gap-4">
-               <FormField
-                  control={form.control}
-                  name="endTime"
-                  render={({ field }) => (
-                    <FormItem className="flex flex-col">
-                      <FormLabel>End Date</FormLabel>
-                      <Popover>
-                        <PopoverTrigger asChild>
-                          <FormControl>
-                            <Button
-                              variant={'outline'}
-                              className={cn(
-                                'pl-3 text-left font-normal',
-                                !field.value && 'text-muted-foreground'
-                              )}
-                            >
-                              {field.value ? (
-                                format(field.value, 'PPP')
-                              ) : (
-                                <span>Pick a date</span>
-                              )}
-                              <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                            </Button>
-                          </FormControl>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-auto p-0" align="start">
-                          <Calendar
-                            mode="single"
-                            selected={field.value}
-                            onSelect={field.onChange}
-                            initialFocus
-                          />
-                        </PopoverContent>
-                      </Popover>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                 <FormField
-                  control={form.control}
-                  name="endTimeStr"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>End Time (24h)</FormLabel>
-                      <FormControl>
-                        <Input placeholder="HH:mm" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+
+            {/* End Date and Time */}
+            <div>
+              <FormLabel>End Time</FormLabel>
+              <div className="grid grid-cols-3 gap-2 mt-1">
+                  <FormField
+                      control={form.control}
+                      name="endTime"
+                      render={({ field }) => (
+                        <FormItem className="col-span-3 sm:col-span-1">
+                          <Popover>
+                            <PopoverTrigger asChild>
+                              <FormControl>
+                                <Button
+                                  variant={'outline'}
+                                  className={cn(
+                                    'w-full pl-3 text-left font-normal',
+                                    !field.value && 'text-muted-foreground'
+                                  )}
+                                >
+                                  {field.value ? format(field.value, 'PPP') : <span>Pick a date</span>}
+                                  <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                                </Button>
+                              </FormControl>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-auto p-0" align="start">
+                              <Calendar mode="single" selected={field.value} onSelect={field.onChange} initialFocus />
+                            </PopoverContent>
+                          </Popover>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="endHour"
+                      render={({ field }) => (
+                          <FormItem>
+                               <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                  <FormControl>
+                                      <SelectTrigger><SelectValue placeholder="Jam" /></SelectTrigger>
+                                  </FormControl>
+                                  <SelectContent>
+                                      {hours.map(hour => <SelectItem key={`end-h-${hour}`} value={hour}>{hour}</SelectItem>)}
+                                  </SelectContent>
+                              </Select>
+                          </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="endMinute"
+                      render={({ field }) => (
+                          <FormItem>
+                              <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                  <FormControl>
+                                      <SelectTrigger><SelectValue placeholder="Menit" /></SelectTrigger>
+                                  </FormControl>
+                                  <SelectContent>
+                                      {minutes.map(minute => <SelectItem key={`end-m-${minute}`} value={minute}>{minute}</SelectItem>)}
+                                  </SelectContent>
+                              </Select>
+                              <FormMessage />
+                          </FormItem>
+                      )}
+                    />
+              </div>
+               {form.formState.errors.endHour && <p className="text-sm font-medium text-destructive mt-2">{form.formState.errors.endHour.message}</p>}
             </div>
+
             <DialogFooter>
               <Button type="submit">Save changes</Button>
             </DialogFooter>
@@ -431,13 +462,9 @@ export default function SchedulePage() {
             <TableRow>
               <TableHead>Title</TableHead>
               <TableHead>Type</TableHead>
-              <TableHead>URL</TableHead>
               <TableHead>Start Time</TableHead>
               <TableHead>End Time</TableHead>
-              <TableHead>Preview</TableHead>
-              <TableHead>
-                <span className="sr-only">Actions</span>
-              </TableHead>
+              <TableHead>Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -450,14 +477,8 @@ export default function SchedulePage() {
                       {schedule.type}
                     </Badge>
                   </TableCell>
-                  <TableCell className="max-w-xs truncate text-muted-foreground">
-                    {schedule.url}
-                  </TableCell>
                   <TableCell>{format(schedule.startTime, "PPp")}</TableCell>
                   <TableCell>{format(schedule.endTime, "PPp")}</TableCell>
-                   <TableCell>
-                    <PreviewDialog schedule={schedule} />
-                  </TableCell>
                   <TableCell>
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
@@ -468,6 +489,12 @@ export default function SchedulePage() {
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
                         <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                         <DropdownMenuItem onSelect={(e) => e.preventDefault()} asChild>
+                           <div className="flex items-center gap-2">
+                            <PreviewDialog schedule={schedule} />
+                            <span>Preview</span>
+                           </div>
+                        </DropdownMenuItem>
                         <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
                           <ScheduleForm schedule={schedule} onFinished={fetchSchedules} />
                         </DropdownMenuItem>
@@ -481,7 +508,7 @@ export default function SchedulePage() {
               ))
             ) : (
               <TableRow>
-                <TableCell colSpan={7} className="h-24 text-center">
+                <TableCell colSpan={5} className="h-24 text-center">
                   No schedules found.
                 </TableCell>
               </TableRow>
