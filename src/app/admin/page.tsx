@@ -5,17 +5,11 @@ import { getSingleVideoUrl } from '@/services/video-service';
 
 function convertGoogleDriveLinkToDirect(url: string): string {
     if (!url) return '';
-    const fileIdMatch = url.match(/drive\.google\.com\/file\/d\/([a-zA-Z0-9_-]+)/);
+    const fileIdMatch = url.match(/(?:drive\.google\.com\/(?:file\/d\/|uc\?id=))([a-zA-Z0-9_-]+)/);
     if (fileIdMatch && fileIdMatch[1]) {
         const fileId = fileIdMatch[1];
         return `https://drive.google.com/uc?export=download&id=${fileId}`;
     }
-    
-    const ucIdMatch = url.match(/uc\?.*id=([a-zA-Z0-9_-]+)/);
-    if (ucIdMatch && ucIdMatch[1]) {
-        return url;
-    }
-    
     return url;
 }
 
