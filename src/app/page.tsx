@@ -40,23 +40,37 @@ function onActiveContentChange(callback: (content: FallbackContent | null) => vo
 export default function Home() {
   const [activeContent, setActiveContent] = useState<FallbackContent | null>(null);
   const { user } = useAuth();
+  const [_, setTimer] = useState<NodeJS.Timeout | null>(null);
+
+  const handleContentUpdate = (content: FallbackContent | null) => {
+      if (content && content.type === 'video' && content.url.includes('drive.google')) {
+          content.url = convertGoogleDriveLinkToDirect(content.url);
+      }
+      setActiveContent(content);
+  };
+
+  const checkForScheduledContent = async () => {
+    const content = await getActiveContent();
+    handleContentUpdate(content);
+  };
 
   useEffect(() => {
-    const handleContentUpdate = (content: FallbackContent | null) => {
-        if (content && content.type === 'video' && content.url.includes('drive.google')) {
-            content.url = convertGoogleDriveLinkToDirect(content.url);
-        }
-        setActiveContent(content);
-    };
-
     // Initial load
-    getActiveContent().then(handleContentUpdate);
+    checkForScheduledContent();
 
-    // Set up real-time listener
+    // Set up real-time listener for any changes in schedule or fallback
     const unsubscribe = onActiveContentChange(handleContentUpdate);
+    
+    // Also poll every 5 seconds to catch time-based changes
+    const interval = setInterval(checkForScheduledContent, 5000);
+    setTimer(interval);
 
-    // Clean up listener on component unmount
-    return () => unsubscribe();
+
+    // Clean up listener and timer on component unmount
+    return () => {
+        unsubscribe();
+        clearInterval(interval);
+    };
   }, []);
 
   const renderContent = () => {
