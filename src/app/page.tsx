@@ -56,7 +56,6 @@ export default function Home() {
             src={activeContent.url}
             autoPlay
             controls
-            muted
             playsInline
             className="h-full w-full object-contain bg-black"
           >
@@ -79,7 +78,6 @@ export default function Home() {
           src={activeVideo.url}
           autoPlay
           controls
-          muted
           playsInline
           onEnded={handleVideoEnded}
           className="h-full w-full object-contain bg-black"
@@ -109,7 +107,6 @@ export default function Home() {
                     src={activeContent.url}
                     autoPlay
                     controls
-                    muted
                     loop
                     playsInline
                     className="h-full w-full object-contain bg-black"

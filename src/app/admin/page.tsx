@@ -45,7 +45,6 @@ export default function AdminPage() {
                     key={activeContent.id}
                     src={activeContent.url}
                     controls
-                    muted
                     autoPlay
                     loop
                     playsInline
@@ -64,7 +63,6 @@ export default function AdminPage() {
                     key={firstVideo.id}
                     src={firstVideo.url}
                     controls
-                    muted
                     autoPlay
                     loop
                     playsInline
@@ -82,7 +80,6 @@ export default function AdminPage() {
                         key={activeContent.id}
                         src={activeContent.url}
                         controls
-                        muted
                         autoPlay
                         loop
                         playsInline
