@@ -36,20 +36,6 @@ export default function Home() {
   
   const activeVideo = activeContent?.type === 'playlist' ? activeContent.items[currentVideoIndex] : null;
   
-  useEffect(() => {
-      if (videoRef.current && activeVideo) {
-          videoRef.current.load(); // Ensure the new source is loaded
-          const playPromise = videoRef.current.play();
-          if (playPromise !== undefined) {
-              playPromise.catch(error => {
-                  console.error("Autoplay was prevented: ", error);
-                  // Autoplay was prevented. Show a "Play" button to the user.
-              });
-          }
-      }
-  }, [activeVideo]);
-
-
   const handleVideoEnded = () => {
     if (activeContent?.type === 'playlist' && activeContent.items.length > 0) {
       setCurrentVideoIndex((prevIndex) => (prevIndex + 1) % activeContent.items.length);
