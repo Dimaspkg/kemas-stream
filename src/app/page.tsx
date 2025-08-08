@@ -150,7 +150,7 @@ export default function Home() {
       {isOverlayVisible && (
         <div className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-black/70 backdrop-blur-sm">
           <div className="text-center text-white space-y-4 p-4">
-              <h1 className="text-4xl font-bold tracking-tight">Welcome to the Stream</h1>
+              <h1 className="text-4xl font-bold tracking-tight">Kemas TV</h1>
               <p className="text-lg text-muted-foreground">Click the button below to start the stream with sound.</p>
               <Button size="lg" onClick={handleInteraction}>
                   <PlayCircle className="mr-2 h-5 w-5" />
