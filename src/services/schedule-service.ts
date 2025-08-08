@@ -20,20 +20,22 @@ const scheduleCollection = collection(db, 'schedule');
 export interface ScheduleItem {
   id: string;
   url: string;
+  title: string;
   startTime: Timestamp;
   endTime: Timestamp;
   status: 'upcoming' | 'live' | 'finished';
   createdAt: Timestamp;
 }
 
-export async function addScheduleItem(url: string, startTime: Date, durationMinutes: number): Promise<void> {
-  if (!url || !startTime || !durationMinutes) {
+export async function addScheduleItem(url: string, title: string, startTime: Date, durationMinutes: number): Promise<void> {
+  if (!url || !title || !startTime || !durationMinutes) {
     throw new Error("All fields are required.");
   }
   const endTime = new Date(startTime.getTime() + durationMinutes * 60000);
 
   await addDoc(scheduleCollection, {
     url,
+    title,
     startTime: Timestamp.fromDate(startTime),
     endTime: Timestamp.fromDate(endTime),
     createdAt: serverTimestamp(),
@@ -51,6 +53,7 @@ export async function getSchedules(): Promise<ScheduleItem[]> {
      const item: Omit<ScheduleItem, 'status'> = { 
         id: doc.id,
         url: data.url,
+        title: data.title,
         startTime: data.startTime,
         endTime: data.endTime,
         createdAt: data.createdAt

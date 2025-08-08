@@ -25,6 +25,7 @@ import { cn } from '@/lib/utils';
 import { addScheduleItem } from '@/services/schedule-service';
 
 const formSchema = z.object({
+  title: z.string().min(1, { message: 'Please enter a title.'}),
   url: z.string().url({ message: 'Please enter a valid video URL.' }),
   date: z.date({ required_error: 'A date is required.' }),
   time: z.string().regex(/^([01]\d|2[0-3]):([0-5]\d)$/, { message: 'Invalid time format (HH:MM).' }),
@@ -38,6 +39,7 @@ export function ScheduleForm() {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
+      title: '',
       url: '',
       date: new Date(),
       time: format(new Date(), 'HH:mm'),
@@ -52,12 +54,13 @@ export function ScheduleForm() {
       const startTime = new Date(values.date);
       startTime.setHours(hours, minutes, 0, 0);
 
-      await addScheduleItem(values.url, startTime, values.duration);
+      await addScheduleItem(values.url, values.title, startTime, values.duration);
       toast({
         title: 'Video Scheduled',
         description: 'The video has been successfully added to the schedule.',
       });
       form.reset({
+        title: '',
         url: '',
         date: new Date(),
         time: format(new Date(), 'HH:mm'),
@@ -77,6 +80,19 @@ export function ScheduleForm() {
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+         <FormField
+          control={form.control}
+          name="title"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Video Title</FormLabel>
+              <FormControl>
+                <Input placeholder="e.g., Company Profile" {...field} disabled={isSubmitting} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
         <FormField
           control={form.control}
           name="url"

@@ -6,7 +6,7 @@ import {
 } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { getPlaylistForPlayback, type PlaylistItem } from './playlist-service';
-import { findActiveSchedule, onScheduleChange } from './schedule-service';
+import { findActiveSchedule, onScheduleChange, type ScheduleItem } from './schedule-service';
 
 
 // This function now determines the active content by first checking
@@ -14,7 +14,13 @@ import { findActiveSchedule, onScheduleChange } from './schedule-service';
 export async function getActiveContent(): Promise<PlaylistItem | PlaylistItem[] | null> {
     const activeSchedule = await findActiveSchedule();
     if (activeSchedule) {
-        return { id: activeSchedule.id, url: activeSchedule.url, createdAt: activeSchedule.startTime };
+        return { 
+          id: activeSchedule.id, 
+          url: activeSchedule.url, 
+          title: activeSchedule.title, 
+          category: '', // Scheduled items don't have a category in this model
+          createdAt: activeSchedule.startTime 
+        };
     }
     
     // If no schedule, return the whole playlist

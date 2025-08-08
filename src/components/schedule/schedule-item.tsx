@@ -121,9 +121,9 @@ export function ScheduleItemCard({ item }: ScheduleItemCardProps) {
                     <div className="md:col-span-2 space-y-2 text-sm">
                        <div className="flex items-center gap-2 font-semibold">
                             <Badge variant={getStatusBadgeVariant(item.status)} className="capitalize">{item.status}</Badge>
-                            <a href={item.url} target="_blank" rel="noopener noreferrer" className="truncate hover:underline">
-                                {item.url}
-                            </a>
+                            <span className="truncate" title={item.title}>
+                                {item.title}
+                            </span>
                         </div>
                         <div className="flex items-center gap-2 text-muted-foreground">
                             <Calendar className="h-4 w-4" />
