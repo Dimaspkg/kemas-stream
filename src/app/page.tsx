@@ -2,32 +2,45 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { getPlaylistForPlayback, type PlaylistItem } from '@/services/playlist-service';
+import { getActiveContent, onContentChange, type PlaylistItem } from '@/services/video-service';
 import { Skeleton } from '@/components/ui/skeleton';
 
 export default function Home() {
+  const [activeContent, setActiveContent] = useState<PlaylistItem | null>(null);
   const [playlist, setPlaylist] = useState<PlaylistItem[]>([]);
   const [currentVideoIndex, setCurrentVideoIndex] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
-
+  
   useEffect(() => {
-    async function fetchPlaylist() {
-      try {
-        const items = await getPlaylistForPlayback();
-        setPlaylist(items);
-      } catch (error) {
-        console.error("Failed to fetch playlist:", error);
-      } finally {
+    const handleContentUpdate = (content: PlaylistItem | PlaylistItem[] | null) => {
+      if (Array.isArray(content)) {
+        // It's a playlist
+        setActiveContent(null); // No single active content
+        setPlaylist(content);
+        setCurrentVideoIndex(0); // Reset index when playlist changes
+      } else {
+        // It's a single scheduled item or null
+        setActiveContent(content);
+        setPlaylist([]); // Not in playlist mode
+      }
+      if (isLoading) {
         setIsLoading(false);
       }
-    }
-    fetchPlaylist();
-  }, []);
+    };
+    
+    // Don't fetch initial content here to avoid race conditions.
+    // onContentChange will provide the initial state.
+    const unsubscribe = onContentChange(handleContentUpdate);
+
+    return () => unsubscribe();
+  }, [isLoading]);
 
   const handleVideoEnded = () => {
-    setCurrentVideoIndex((prevIndex) => (prevIndex + 1) % playlist.length);
+    if (playlist.length > 0) {
+      setCurrentVideoIndex((prevIndex) => (prevIndex + 1) % playlist.length);
+    }
   };
-  
+
   const renderContent = () => {
     if (isLoading) {
        return (
@@ -37,29 +50,47 @@ export default function Home() {
       );
     }
     
-    if (playlist.length === 0) {
+    // If there is a scheduled item, play it.
+    if (activeContent) {
+       return (
+          <video 
+            key={activeContent.id} 
+            src={activeContent.url}
+            autoPlay 
+            controls
+            muted
+            playsInline
+            className="h-full w-full object-cover"
+          >
+            Your browser does not support the video tag.
+          </video>
+        );
+    }
+
+    // Otherwise, play from the playlist
+    if (playlist.length > 0) {
+      const activeVideo = playlist[currentVideoIndex];
       return (
-        <div className="flex h-full w-full items-center justify-center bg-black text-white">
-          <p>The playlist is empty. Add videos in the admin panel.</p>
-        </div>
+        <video 
+          key={activeVideo.id} 
+          src={activeVideo.url}
+          autoPlay 
+          controls
+          muted
+          playsInline
+          onEnded={handleVideoEnded}
+          className="h-full w-full object-cover"
+        >
+          Your browser does not support the video tag.
+        </video>
       );
     }
 
-    const activeVideo = playlist[currentVideoIndex];
-
+    // Fallback if no schedule and no playlist
     return (
-      <video 
-        key={activeVideo.id} 
-        src={activeVideo.url}
-        autoPlay 
-        controls
-        muted
-        playsInline
-        onEnded={handleVideoEnded}
-        className="h-full w-full object-cover"
-      >
-        Your browser does not support the video tag.
-      </video>
+      <div className="flex h-full w-full items-center justify-center bg-black text-white">
+        <p>The stream is currently offline. Nothing is scheduled and the playlist is empty.</p>
+      </div>
     );
   }
 

@@ -6,20 +6,31 @@ import {
 } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { getPlaylistForPlayback, type PlaylistItem } from './playlist-service';
+import { findActiveSchedule, onScheduleChange } from './schedule-service';
 
 
-// The concept of a single fallback content is deprecated.
-// The playlist now serves as the dynamic fallback.
-// These interfaces and functions are kept for potential future use or can be removed.
-
-export interface FallbackContent {
-    type: 'video' | 'image' | 'playlist';
-    url?: string; // For single video/image
-    playlistId?: string; // For a playlist
+// This function now determines the active content by first checking
+// for a scheduled item, and then falling back to the playlist.
+export async function getActiveContent(): Promise<PlaylistItem | PlaylistItem[] | null> {
+    const activeSchedule = await findActiveSchedule();
+    if (activeSchedule) {
+        return { id: activeSchedule.id, url: activeSchedule.url, createdAt: activeSchedule.startTime };
+    }
+    
+    // If no schedule, return the whole playlist
+    return await getPlaylistForPlayback();
 }
 
-// This function now primarily serves to get the playlist for playback
-// as the active content when no other stream is scheduled.
-export async function getActiveContent(): Promise<PlaylistItem[]> {
-    return await getPlaylistForPlayback();
+
+export function onContentChange(callback: (content: PlaylistItem | PlaylistItem[] | null) => void): () => void {
+    // This function will be called whenever the schedule collection changes.
+    const unsubscribe = onScheduleChange(async () => {
+        const content = await getActiveContent();
+        callback(content);
+    });
+
+    // We also immediately trigger a check when first subscribing
+    getActiveContent().then(callback);
+
+    return unsubscribe;
 }
