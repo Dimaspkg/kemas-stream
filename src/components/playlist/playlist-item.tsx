@@ -4,13 +4,14 @@
 import { useState } from 'react';
 import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { PlayCircle, Trash2, Calendar, Link as LinkIcon, Copy, Check } from 'lucide-react';
+import { PlayCircle, Trash2, Calendar, Link as LinkIcon, Copy, Check, Pencil } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { deleteVideoFromPlaylist, type PlaylistItem } from '@/services/playlist-service';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '../ui/alert-dialog';
 import { PlaylistPreviewDialog } from './playlist-preview-dialog';
 import { format } from 'date-fns';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '../ui/tooltip';
+import { PlaylistEditDialog } from './playlist-edit-dialog';
 
 interface PlaylistItemCardProps {
     item: PlaylistItem;
@@ -19,6 +20,7 @@ interface PlaylistItemCardProps {
 export function PlaylistItemCard({ item }: PlaylistItemCardProps) {
     const { toast } = useToast();
     const [isPreviewOpen, setIsPreviewOpen] = useState(false);
+    const [isEditOpen, setIsEditOpen] = useState(false);
     const [hasCopied, setHasCopied] = useState(false);
 
     const handleDelete = async () => {
@@ -47,7 +49,7 @@ export function PlaylistItemCard({ item }: PlaylistItemCardProps) {
         <>
             <Card className="flex flex-col">
                 <CardContent className="p-4 flex-grow">
-                    <div className="aspect-video bg-muted rounded-md mb-4 flex items-center justify-center">
+                    <div className="aspect-video bg-muted rounded-md mb-4 flex items-center justify-center cursor-pointer" onClick={() => setIsPreviewOpen(true)}>
                          <PlayCircle className="h-16 w-16 text-muted-foreground/50" />
                     </div>
                     <div className="space-y-2">
@@ -96,6 +98,9 @@ export function PlaylistItemCard({ item }: PlaylistItemCardProps) {
                         <Button variant="ghost" className="w-full" onClick={() => setIsPreviewOpen(true)}>
                             <PlayCircle className="mr-2 h-4 w-4" /> Preview
                         </Button>
+                        <Button variant="ghost" className="w-full" onClick={() => setIsEditOpen(true)}>
+                            <Pencil className="mr-2 h-4 w-4" /> Edit
+                        </Button>
 
                          <AlertDialog>
                             <AlertDialogTrigger asChild>
@@ -124,6 +129,11 @@ export function PlaylistItemCard({ item }: PlaylistItemCardProps) {
                 onOpenChange={setIsPreviewOpen}
                 url={item.url}
                 title={item.title}
+            />
+             <PlaylistEditDialog
+                isOpen={isEditOpen}
+                onOpenChange={setIsEditOpen}
+                item={item}
             />
         </>
     );

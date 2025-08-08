@@ -9,6 +9,7 @@ import {
   orderBy,
   onSnapshot,
   Timestamp,
+  updateDoc,
 } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 
@@ -30,6 +31,14 @@ export async function addVideoToPlaylist(url: string, title: string): Promise<vo
     title,
     createdAt: serverTimestamp(),
   });
+}
+
+export async function updatePlaylistItem(id: string, data: { title: string; url: string }): Promise<void> {
+  if (!id || !data.url || !data.title) {
+    throw new Error("ID, URL and title cannot be empty.");
+  }
+  const playlistItemDoc = doc(db, 'playlist', id);
+  await updateDoc(playlistItemDoc, data);
 }
 
 export async function getPlaylist(): Promise<PlaylistItem[]> {
