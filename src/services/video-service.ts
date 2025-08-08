@@ -1,10 +1,8 @@
-
-'use server';
-
 import {
   doc,
   getDoc,
   setDoc,
+  onSnapshot
 } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 
@@ -13,6 +11,17 @@ const videoConfigDoc = doc(db, 'settings', 'fallbackContent');
 export interface FallbackContent {
     type: 'video' | 'image';
     url: string;
+}
+
+export function onContentChange(callback: (content: FallbackContent | null) => void): () => void {
+    const unsubscribe = onSnapshot(videoConfigDoc, (snapshot) => {
+        if (snapshot.exists()) {
+            callback(snapshot.data() as FallbackContent);
+        } else {
+            callback({ type: 'video', url: '' });
+        }
+    });
+    return unsubscribe;
 }
 
 export async function setFallbackContent(content: FallbackContent): Promise<void> {

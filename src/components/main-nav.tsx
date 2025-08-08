@@ -16,6 +16,11 @@ export function MainNav({
       label: 'Fallback Stream',
       active: pathname === '/admin',
     },
+     {
+      href: '/admin/playlist',
+      label: 'Playlist',
+      active: pathname === '/admin/playlist',
+    },
   ];
 
   return (
