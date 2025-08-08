@@ -19,23 +19,25 @@ export interface PlaylistItem {
   id: string;
   url: string;
   title: string;
+  category: string;
   createdAt: Timestamp;
 }
 
-export async function addVideoToPlaylist(url: string, title: string): Promise<void> {
-    if (!url || !title) {
-        throw new Error("URL and title cannot be empty.");
+export async function addVideoToPlaylist(url: string, title: string, category: string): Promise<void> {
+    if (!url || !title || !category) {
+        throw new Error("URL, title, and category cannot be empty.");
     }
   await addDoc(playlistCollection, {
     url,
     title,
+    category,
     createdAt: serverTimestamp(),
   });
 }
 
-export async function updatePlaylistItem(id: string, data: { title: string; url: string }): Promise<void> {
-  if (!id || !data.url || !data.title) {
-    throw new Error("ID, URL and title cannot be empty.");
+export async function updatePlaylistItem(id: string, data: { title: string; url: string; category: string }): Promise<void> {
+  if (!id || !data.url || !data.title || !data.category) {
+    throw new Error("ID, URL, title, and category cannot be empty.");
   }
   const playlistItemDoc = doc(db, 'playlist', id);
   await updateDoc(playlistItemDoc, data);

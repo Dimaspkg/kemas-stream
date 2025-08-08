@@ -21,6 +21,7 @@ interface PlaylistEditDialogProps {
 
 const formSchema = z.object({
   title: z.string().min(1, { message: 'Please enter a title.' }),
+  category: z.string().min(1, { message: 'Please enter a category.' }),
   url: z.string().url({ message: 'Please enter a valid video URL.' }),
 });
 
@@ -32,6 +33,7 @@ export function PlaylistEditDialog({ isOpen, onOpenChange, item }: PlaylistEditD
     resolver: zodResolver(formSchema),
     defaultValues: {
       title: item.title,
+      category: item.category,
       url: item.url,
     },
   });
@@ -41,6 +43,7 @@ export function PlaylistEditDialog({ isOpen, onOpenChange, item }: PlaylistEditD
     if (item) {
       form.reset({
         title: item.title,
+        category: item.category || '',
         url: item.url,
       });
     }
@@ -85,6 +88,19 @@ export function PlaylistEditDialog({ isOpen, onOpenChange, item }: PlaylistEditD
                   <FormLabel>Title</FormLabel>
                   <FormControl>
                     <Input placeholder="e.g., Company Profile Video" {...field} disabled={isSubmitting} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="category"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Category</FormLabel>
+                  <FormControl>
+                    <Input placeholder="e.g., Tutorial" {...field} disabled={isSubmitting} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

@@ -4,7 +4,7 @@
 import { useState } from 'react';
 import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { PlayCircle, Trash2, Calendar, Link as LinkIcon, Copy, Check, Pencil } from 'lucide-react';
+import { PlayCircle, Trash2, Calendar, Link as LinkIcon, Copy, Check, Pencil, Tag } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { deleteVideoFromPlaylist, type PlaylistItem } from '@/services/playlist-service';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '../ui/alert-dialog';
@@ -12,6 +12,7 @@ import { PlaylistPreviewDialog } from './playlist-preview-dialog';
 import { format } from 'date-fns';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '../ui/tooltip';
 import { PlaylistEditDialog } from './playlist-edit-dialog';
+import { Badge } from '../ui/badge';
 
 interface PlaylistItemCardProps {
     item: PlaylistItem;
@@ -56,6 +57,12 @@ export function PlaylistItemCard({ item }: PlaylistItemCardProps) {
                         <h3 className="font-semibold leading-none tracking-tight truncate" title={item.title}>
                            {item.title || 'No Title'}
                         </h3>
+                         {item.category && (
+                            <div className="text-sm flex items-center gap-2 text-muted-foreground">
+                                <Tag className="h-4 w-4" />
+                                <Badge variant="secondary" className="capitalize">{item.category}</Badge>
+                            </div>
+                        )}
                         <div className="text-sm flex items-center gap-2 text-muted-foreground">
                             <TooltipProvider>
                                 <Tooltip>
