@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { PlayCircle, Trash2, Calendar, Link as LinkIcon } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { deleteVideoFromPlaylist, type PlaylistItem } from '@/services/playlist-service';
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '../ui/alert-dialog';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '../ui/alert-dialog';
 import { PlaylistPreviewDialog } from './playlist-preview-dialog';
 import { format } from 'date-fns';
 
@@ -49,10 +49,12 @@ export function PlaylistItemCard({ item }: PlaylistItemCardProps) {
                                 {item.url}
                             </a>
                         </div>
-                        <div className="flex items-center gap-2 text-muted-foreground">
-                            <Calendar className="h-4 w-4" />
-                            <span>Added on {format(item.createdAt.toDate(), "MMM d, yyyy")}</span>
-                        </div>
+                        {item.createdAt && (
+                            <div className="flex items-center gap-2 text-muted-foreground">
+                                <Calendar className="h-4 w-4" />
+                                <span>Added on {format(item.createdAt.toDate(), "MMM d, yyyy")}</span>
+                            </div>
+                        )}
                     </div>
                 </CardContent>
                 <CardFooter className="p-2 border-t">
