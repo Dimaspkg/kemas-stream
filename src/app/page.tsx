@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { getActiveContent, onContentChange, type ActiveContent } from '@/services/video-service';
 import { Skeleton } from '@/components/ui/skeleton';
 
@@ -9,6 +9,7 @@ export default function Home() {
   const [activeContent, setActiveContent] = useState<ActiveContent | null>(null);
   const [currentVideoIndex, setCurrentVideoIndex] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
+  const videoRef = useRef<HTMLVideoElement>(null);
 
   useEffect(() => {
     const handleContentUpdate = (content: ActiveContent | null) => {
@@ -32,6 +33,22 @@ export default function Home() {
 
     return () => unsubscribe();
   }, [isLoading, activeContent?.type]);
+  
+  const activeVideo = activeContent?.type === 'playlist' ? activeContent.items[currentVideoIndex] : null;
+  
+  useEffect(() => {
+      if (videoRef.current && activeVideo) {
+          videoRef.current.load(); // Ensure the new source is loaded
+          const playPromise = videoRef.current.play();
+          if (playPromise !== undefined) {
+              playPromise.catch(error => {
+                  console.error("Autoplay was prevented: ", error);
+                  // Autoplay was prevented. Show a "Play" button to the user.
+              });
+          }
+      }
+  }, [activeVideo]);
+
 
   const handleVideoEnded = () => {
     if (activeContent?.type === 'playlist' && activeContent.items.length > 0) {
@@ -66,7 +83,6 @@ export default function Home() {
 
     // Priority 2: Playlist
     if (activeContent?.type === 'playlist' && activeContent.items.length > 0) {
-      const activeVideo = activeContent.items[currentVideoIndex];
        if (!activeVideo) {
          // This can happen if the playlist is modified while playing
          setCurrentVideoIndex(0);
@@ -74,6 +90,7 @@ export default function Home() {
        }
       return (
         <video
+          ref={videoRef}
           key={activeVideo.id}
           src={activeVideo.url}
           autoPlay
