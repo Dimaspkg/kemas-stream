@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { getActiveContent, onContentChange, type ActiveContent } from '@/services/video-service';
 import { Skeleton } from '@/components/ui/skeleton';
 
@@ -9,7 +9,6 @@ export default function Home() {
   const [activeContent, setActiveContent] = useState<ActiveContent | null>(null);
   const [currentVideoIndex, setCurrentVideoIndex] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
-  const videoRef = useRef<HTMLVideoElement>(null);
 
   useEffect(() => {
     const handleContentUpdate = (content: ActiveContent | null) => {
@@ -40,36 +39,6 @@ export default function Home() {
     }
   };
 
-  const handleVideoPlay = () => {
-    const video = videoRef.current;
-    if (!video) return;
-
-    // Unmute and set volume to 0 to start the fade-in.
-    // The browser might still block this if there's no user interaction,
-    // but controls are enabled for the user to manually play/unmute.
-    video.muted = false;
-    video.volume = 0;
-
-    let currentVolume = 0;
-    // Clear any existing interval to prevent multiple fade-ins
-    const existingInterval = video.dataset.fadeIntervalId;
-    if (existingInterval) {
-        clearInterval(Number(existingInterval));
-    }
-
-    const fadeAudio = setInterval(() => {
-      currentVolume += 0.05;
-      if (currentVolume >= 1) {
-        video.volume = 1;
-        clearInterval(fadeAudio);
-        delete video.dataset.fadeIntervalId;
-      } else {
-        video.volume = currentVolume;
-      }
-    }, 100); // increase volume every 100ms for a 2s fade-in
-    video.dataset.fadeIntervalId = String(fadeAudio);
-  };
-
   const renderContent = () => {
     if (isLoading) {
        return (
@@ -82,13 +51,12 @@ export default function Home() {
     if (activeContent?.type === 'scheduled-video') {
        return (
           <video
-            ref={videoRef}
             key={activeContent.id}
             src={activeContent.url}
             autoPlay
             controls
+            muted
             playsInline
-            onPlay={handleVideoPlay}
             className="h-full w-full object-contain bg-black"
           >
             Your browser does not support the video tag.
@@ -103,13 +71,12 @@ export default function Home() {
        }
       return (
         <video
-          ref={videoRef}
           key={activeVideo.id}
           src={activeVideo.url}
           autoPlay
           controls
+          muted
           playsInline
-          onPlay={handleVideoPlay}
           onEnded={handleVideoEnded}
           className="h-full w-full object-contain bg-black"
         >
@@ -133,14 +100,13 @@ export default function Home() {
         if (activeContent.fallbackType === 'video') {
              return (
                 <video
-                    ref={videoRef}
                     key={activeContent.id}
                     src={activeContent.url}
                     autoPlay
                     controls
                     loop
+                    muted
                     playsInline
-                    onPlay={handleVideoPlay}
                     className="h-full w-full object-contain bg-black"
                 >
                     Your browser does not support the video tag.
