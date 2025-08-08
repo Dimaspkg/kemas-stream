@@ -50,8 +50,11 @@ export function PlaylistItemCard({ item }: PlaylistItemCardProps) {
                     <div className="aspect-video bg-muted rounded-md mb-4 flex items-center justify-center">
                          <PlayCircle className="h-16 w-16 text-muted-foreground/50" />
                     </div>
-                    <div className="space-y-2 text-sm">
-                        <div className="flex items-center gap-2 text-muted-foreground">
+                    <div className="space-y-2">
+                        <h3 className="font-semibold leading-none tracking-tight truncate" title={item.title}>
+                           {item.title || 'No Title'}
+                        </h3>
+                        <div className="text-sm flex items-center gap-2 text-muted-foreground">
                             <TooltipProvider>
                                 <Tooltip>
                                     <TooltipTrigger asChild>
@@ -81,7 +84,7 @@ export function PlaylistItemCard({ item }: PlaylistItemCardProps) {
                             </TooltipProvider>
                         </div>
                         {item.createdAt && (
-                            <div className="flex items-center gap-2 text-muted-foreground">
+                            <div className="text-sm flex items-center gap-2 text-muted-foreground">
                                 <Calendar className="h-4 w-4" />
                                 <span>Added on {format(item.createdAt.toDate(), "MMM d, yyyy")}</span>
                             </div>
@@ -120,6 +123,7 @@ export function PlaylistItemCard({ item }: PlaylistItemCardProps) {
                 isOpen={isPreviewOpen}
                 onOpenChange={setIsPreviewOpen}
                 url={item.url}
+                title={item.title}
             />
         </>
     );

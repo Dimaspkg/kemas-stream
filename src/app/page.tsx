@@ -28,9 +28,14 @@ export default function Home() {
       }
     };
     
-    // Don't fetch initial content here to avoid race conditions.
     // onContentChange will provide the initial state.
     const unsubscribe = onContentChange(handleContentUpdate);
+
+    // Initial fetch to prevent blank screen on first load
+     getActiveContent().then(content => {
+      handleContentUpdate(content);
+    });
+
 
     return () => unsubscribe();
   }, [isLoading]);
@@ -68,7 +73,7 @@ export default function Home() {
     }
 
     // Otherwise, play from the playlist
-    if (playlist.length > 0) {
+    if (playlist.length > 0 && playlist[currentVideoIndex]) {
       const activeVideo = playlist[currentVideoIndex];
       return (
         <video 

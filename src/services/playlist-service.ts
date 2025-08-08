@@ -17,15 +17,17 @@ const playlistCollection = collection(db, 'playlist');
 export interface PlaylistItem {
   id: string;
   url: string;
+  title: string;
   createdAt: Timestamp;
 }
 
-export async function addVideoToPlaylist(url: string): Promise<void> {
-    if (!url) {
-        throw new Error("URL cannot be empty.");
+export async function addVideoToPlaylist(url: string, title: string): Promise<void> {
+    if (!url || !title) {
+        throw new Error("URL and title cannot be empty.");
     }
   await addDoc(playlistCollection, {
     url,
+    title,
     createdAt: serverTimestamp(),
   });
 }
@@ -38,7 +40,7 @@ export async function getPlaylist(): Promise<PlaylistItem[]> {
 
 
 export async function getPlaylistForPlayback(): Promise<PlaylistItem[]> {
-  // For playback, we might want them in the order they were added (oldest first)
+  // For playback, we want them in the order they were added (oldest first)
   const q = query(playlistCollection, orderBy('createdAt', 'asc'));
   const snapshot = await getDocs(q);
   return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as PlaylistItem));

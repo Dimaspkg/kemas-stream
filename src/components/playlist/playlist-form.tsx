@@ -20,6 +20,7 @@ import { ListPlus } from 'lucide-react';
 import React from 'react';
 
 const formSchema = z.object({
+  title: z.string().min(1, { message: 'Please enter a title.'}),
   url: z.string().url({ message: 'Please enter a valid video URL.' }),
 });
 
@@ -29,6 +30,7 @@ export function PlaylistForm() {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
+      title: '',
       url: '',
     },
   });
@@ -36,7 +38,7 @@ export function PlaylistForm() {
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setIsSubmitting(true);
     try {
-      await addVideoToPlaylist(values.url);
+      await addVideoToPlaylist(values.url, values.title);
       toast({
         title: 'Video Added',
         description: 'The video has been successfully added to your playlist.',
@@ -58,23 +60,34 @@ export function PlaylistForm() {
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
         <FormField
           control={form.control}
-          name="url"
+          name="title"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>New Video URL</FormLabel>
-              <div className="flex gap-2">
-                <FormControl>
-                  <Input placeholder="https://example.com/video.mp4" {...field} disabled={isSubmitting} />
+              <FormLabel>Title</FormLabel>
+               <FormControl>
+                  <Input placeholder="e.g., Company Profile Video" {...field} disabled={isSubmitting} />
                 </FormControl>
-                <Button type="submit" disabled={isSubmitting}>
-                  <ListPlus className="mr-2 h-4 w-4" />
-                  Add to Playlist
-                </Button>
-              </div>
               <FormMessage />
             </FormItem>
           )}
         />
+        <FormField
+          control={form.control}
+          name="url"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Video URL</FormLabel>
+               <FormControl>
+                  <Input placeholder="https://example.com/video.mp4" {...field} disabled={isSubmitting} />
+                </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <Button type="submit" disabled={isSubmitting} className="w-full sm:w-auto">
+          <ListPlus className="mr-2 h-4 w-4" />
+          Add to Playlist
+        </Button>
       </form>
     </Form>
   );

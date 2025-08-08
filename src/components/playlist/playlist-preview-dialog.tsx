@@ -6,24 +6,30 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogDescription,
 } from '@/components/ui/dialog';
 
 interface PlaylistPreviewDialogProps {
   isOpen: boolean;
   onOpenChange: (isOpen: boolean) => void;
   url: string;
+  title?: string;
 }
 
 export function PlaylistPreviewDialog({
   isOpen,
   onOpenChange,
   url,
+  title
 }: PlaylistPreviewDialogProps) {
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-4xl">
         <DialogHeader>
-          <DialogTitle>Video Preview</DialogTitle>
+          <DialogTitle>{title || 'Video Preview'}</DialogTitle>
+           <DialogDescription className="truncate">
+            {url}
+          </DialogDescription>
         </DialogHeader>
         <div className="aspect-video w-full overflow-hidden rounded-lg bg-black flex items-center justify-center">
             <video
