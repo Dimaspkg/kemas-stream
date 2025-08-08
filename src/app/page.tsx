@@ -2,42 +2,30 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { getActiveContent, type FallbackContent } from '@/services/video-service';
-import { onSnapshot, collection, doc } from 'firebase/firestore';
+import { getFallbackContent, type FallbackContent } from '@/services/video-service';
+import { onSnapshot, doc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { Skeleton } from '@/components/ui/skeleton';
-
-
-function onContentChange(callback: (content: FallbackContent | null) => void): () => void {
-  const handleUpdate = async () => {
-    const content = await getActiveContent();
-    callback(content);
-  };
-
-  // Initial call
-  handleUpdate();
-
-  const scheduleUnsubscribe = onSnapshot(collection(db, 'schedule'), handleUpdate);
-  const fallbackUnsubscribe = onSnapshot(doc(db, 'settings', 'fallbackContent'), handleUpdate);
-
-  return () => {
-    scheduleUnsubscribe();
-    fallbackUnsubscribe();
-  };
-}
-
 
 export default function Home() {
   const [activeContent, setActiveContent] = useState<FallbackContent | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const handleContentUpdate = (content: FallbackContent | null) => {
+    const fallbackDoc = doc(db, 'settings', 'fallbackContent');
+    
+    const unsubscribe = onSnapshot(fallbackDoc, (snapshot) => {
+        if (snapshot.exists()) {
+            setActiveContent(snapshot.data() as FallbackContent);
+        }
+        setIsLoading(false);
+    });
+
+    // Initial fetch to avoid waiting for the first snapshot
+    getFallbackContent().then(content => {
         setActiveContent(content);
         setIsLoading(false);
-    };
-    
-    const unsubscribe = onContentChange(handleContentUpdate);
+    });
 
     return () => unsubscribe();
   }, []);
@@ -54,7 +42,7 @@ export default function Home() {
     if (!activeContent || !activeContent.url) {
       return (
         <div className="flex h-full w-full items-center justify-center bg-black text-white">
-          <p>No content is scheduled to play at the moment.</p>
+          <p>No content is configured to play.</p>
         </div>
       );
     }

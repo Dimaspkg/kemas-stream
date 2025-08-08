@@ -16,11 +16,6 @@ export function MainNav({
       label: 'Fallback Stream',
       active: pathname === '/admin',
     },
-    {
-      href: '/admin/schedule',
-      label: 'Schedule',
-      active: pathname === '/admin/schedule',
-    },
   ];
 
   return (
