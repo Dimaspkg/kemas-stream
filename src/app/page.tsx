@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { getActiveContent, onContentChange, type ActiveContent } from '@/services/video-service';
 import { Skeleton } from '@/components/ui/skeleton';
 
@@ -9,6 +9,7 @@ export default function Home() {
   const [activeContent, setActiveContent] = useState<ActiveContent | null>(null);
   const [currentVideoIndex, setCurrentVideoIndex] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
+  const videoRef = useRef<HTMLVideoElement>(null);
 
   useEffect(() => {
     const handleContentUpdate = (content: ActiveContent | null) => {
@@ -22,11 +23,9 @@ export default function Home() {
       }
     };
 
-    // onContentChange will provide the initial state.
     const unsubscribe = onContentChange(handleContentUpdate);
 
-    // Initial fetch to prevent blank screen on first load
-     getActiveContent().then(content => {
+    getActiveContent().then(content => {
       handleContentUpdate(content);
     });
 
@@ -41,6 +40,26 @@ export default function Home() {
     }
   };
 
+  const handleVideoPlay = () => {
+    const video = videoRef.current;
+    if (!video) return;
+
+    // Start muted and with volume 0
+    video.muted = false;
+    video.volume = 0;
+
+    let currentVolume = 0;
+    const fadeAudio = setInterval(() => {
+      currentVolume += 0.05;
+      if (currentVolume >= 1) {
+        video.volume = 1;
+        clearInterval(fadeAudio);
+      } else {
+        video.volume = currentVolume;
+      }
+    }, 100); // increase volume every 100ms for a 2s fade-in
+  };
+
   const renderContent = () => {
     if (isLoading) {
        return (
@@ -50,16 +69,16 @@ export default function Home() {
       );
     }
 
-    // Priority 1: Scheduled Video
     if (activeContent?.type === 'scheduled-video') {
        return (
           <video
+            ref={videoRef}
             key={activeContent.id}
             src={activeContent.url}
             autoPlay
             controls
             playsInline
-            muted
+            onPlay={handleVideoPlay}
             className="h-full w-full object-contain bg-black"
           >
             Your browser does not support the video tag.
@@ -67,21 +86,20 @@ export default function Home() {
         );
     }
 
-    // Priority 2: Playlist
     if (activeContent?.type === 'playlist' && activeContent.items.length > 0) {
        if (!activeVideo) {
-         // This can happen if the playlist is modified while playing
          setCurrentVideoIndex(0);
          return null;
        }
       return (
         <video
+          ref={videoRef}
           key={activeVideo.id}
           src={activeVideo.url}
           autoPlay
           controls
           playsInline
-          muted
+          onPlay={handleVideoPlay}
           onEnded={handleVideoEnded}
           className="h-full w-full object-contain bg-black"
         >
@@ -90,7 +108,6 @@ export default function Home() {
       );
     }
 
-    // Priority 3: Fallback Content
     if (activeContent?.type === 'fallback') {
         if (activeContent.fallbackType === 'image') {
             return (
@@ -106,13 +123,14 @@ export default function Home() {
         if (activeContent.fallbackType === 'video') {
              return (
                 <video
+                    ref={videoRef}
                     key={activeContent.id}
                     src={activeContent.url}
                     autoPlay
                     controls
                     loop
                     playsInline
-                    muted
+                    onPlay={handleVideoPlay}
                     className="h-full w-full object-contain bg-black"
                 >
                     Your browser does not support the video tag.
