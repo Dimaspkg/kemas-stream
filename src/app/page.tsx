@@ -91,7 +91,7 @@ export default function Home() {
 
     // Priority 3: Fallback Content
     if (activeContent?.type === 'fallback') {
-        if (activeContent.type === 'image') {
+        if (activeContent.fallbackType === 'image') {
             return (
                 <div className="h-full w-full bg-black flex items-center justify-center">
                     <img
@@ -102,7 +102,7 @@ export default function Home() {
                 </div>
             )
         }
-        if (activeContent.type === 'video') {
+        if (activeContent.fallbackType === 'video') {
              return (
                 <video
                     key={activeContent.id}

@@ -76,7 +76,7 @@ export default function AdminPage() {
         }
         
         if (activeContent?.type === 'fallback') {
-            if (activeContent.type === 'video') {
+            if (activeContent.fallbackType === 'video') {
                  return (
                     <video
                         key={activeContent.id}
@@ -92,7 +92,7 @@ export default function AdminPage() {
                     </video>
                 );
             }
-             if (activeContent.type === 'image') {
+             if (activeContent.fallbackType === 'image') {
                  return (
                      <img 
                         src={activeContent.url} 

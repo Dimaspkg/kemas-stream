@@ -8,10 +8,11 @@ import { getPlaylistForPlayback, type PlaylistItem } from './playlist-service';
 import { findActiveSchedule, type ScheduleItem } from './schedule-service';
 import { getFallbackContent, type FallbackContent } from './fallback-service';
 
+
 export type ActiveContent =
   | ({ type: 'scheduled-video' } & ScheduleItem)
   | ({ type: 'playlist'; items: PlaylistItem[] })
-  | ({ type: 'fallback' } & FallbackContent);
+  | ({ type: 'fallback'; fallbackType: 'video' | 'image' } & Omit<FallbackContent, 'type'>);
 
 
 // This function now determines the active content with a clear priority:
@@ -37,7 +38,12 @@ export async function getActiveContent(): Promise<ActiveContent | null> {
     // 3. If no schedule and empty playlist, check for fallback content
     const fallback = await getFallbackContent();
     if (fallback) {
-        return { type: 'fallback', ...fallback };
+        const { type, ...rest } = fallback;
+        return { 
+          type: 'fallback', 
+          fallbackType: type,
+          ...rest 
+        };
     }
 
     // Nothing is configured
