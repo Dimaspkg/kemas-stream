@@ -47,6 +47,7 @@ export default function AdminPage() {
                     controls
                     autoPlay
                     loop
+                    muted
                     playsInline
                     className="aspect-video w-full rounded-lg bg-black object-contain"
                 >
@@ -65,6 +66,7 @@ export default function AdminPage() {
                     controls
                     autoPlay
                     loop
+                    muted
                     playsInline
                     className="aspect-video w-full rounded-lg bg-black object-contain"
                 >
@@ -82,6 +84,7 @@ export default function AdminPage() {
                         controls
                         autoPlay
                         loop
+                        muted
                         playsInline
                         className="aspect-video w-full rounded-lg bg-black object-contain"
                     >

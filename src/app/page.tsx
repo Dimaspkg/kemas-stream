@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { getActiveContent, onContentChange, type ActiveContent } from '@/services/video-service';
 import { Skeleton } from '@/components/ui/skeleton';
 
@@ -9,7 +9,6 @@ export default function Home() {
   const [activeContent, setActiveContent] = useState<ActiveContent | null>(null);
   const [currentVideoIndex, setCurrentVideoIndex] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
-  const videoRef = useRef<HTMLVideoElement>(null);
 
   useEffect(() => {
     const handleContentUpdate = (content: ActiveContent | null) => {
@@ -60,6 +59,7 @@ export default function Home() {
             autoPlay
             controls
             playsInline
+            muted
             className="h-full w-full object-contain bg-black"
           >
             Your browser does not support the video tag.
@@ -76,12 +76,12 @@ export default function Home() {
        }
       return (
         <video
-          ref={videoRef}
           key={activeVideo.id}
           src={activeVideo.url}
           autoPlay
           controls
           playsInline
+          muted
           onEnded={handleVideoEnded}
           className="h-full w-full object-contain bg-black"
         >
@@ -112,6 +112,7 @@ export default function Home() {
                     controls
                     loop
                     playsInline
+                    muted
                     className="h-full w-full object-contain bg-black"
                 >
                     Your browser does not support the video tag.
