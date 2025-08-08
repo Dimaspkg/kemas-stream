@@ -21,6 +21,11 @@ export function MainNav({
       label: 'Playlist',
       active: pathname === '/admin/playlist',
     },
+    {
+      href: '/admin/settings',
+      label: 'Settings',
+      active: pathname === '/admin/settings',
+    }
   ];
 
   return (

@@ -8,12 +8,9 @@ import { ScheduleForm } from '@/components/schedule/schedule-form';
 import { ScheduleList } from '@/components/schedule/schedule-list';
 import { getActiveContent, onContentChange, type ActiveContent } from '@/services/video-service';
 import { Skeleton } from '@/components/ui/skeleton';
-import { FallbackForm } from '@/components/fallback/fallback-form';
-import { getFallbackContent, type FallbackContent } from '@/services/fallback-service';
 
 export default function AdminPage() {
     const [activeContent, setActiveContent] = useState<ActiveContent | null>(null);
-    const [fallbackContent, setFallbackContent] = useState<FallbackContent | null>(null);
     const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
@@ -25,12 +22,8 @@ export default function AdminPage() {
         };
 
         const fetchInitialData = async () => {
-            const [initialContent, initialFallback] = await Promise.all([
-                getActiveContent(),
-                getFallbackContent()
-            ]);
+            const initialContent = await getActiveContent();
             handleContentUpdate(initialContent);
-            setFallbackContent(initialFallback);
         };
         
         fetchInitialData();
@@ -97,17 +90,6 @@ export default function AdminPage() {
                         </CardHeader>
                         <CardContent>
                             {renderPreview()}
-                        </CardContent>
-                    </Card>
-                     <Card>
-                        <CardHeader>
-                            <CardTitle>Final Fallback Content</CardTitle>
-                            <CardDescription>
-                               This content plays only when nothing is scheduled AND the playlist is empty.
-                            </CardDescription>
-                        </CardHeader>
-                        <CardContent>
-                           <FallbackForm initialFallbackContent={fallbackContent} />
                         </CardContent>
                     </Card>
                 </div>
