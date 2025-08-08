@@ -52,15 +52,6 @@ export function ScheduleForm() {
       const startTime = new Date(values.date);
       startTime.setHours(hours, minutes, 0, 0);
 
-      if (startTime < new Date()) {
-        toast({
-            variant: 'destructive',
-            title: 'Invalid Time',
-            description: 'Cannot schedule a video in the past.',
-        });
-        return;
-      }
-
       await addScheduleItem(values.url, startTime, values.duration);
       toast({
         title: 'Video Scheduled',
