@@ -1,6 +1,3 @@
-
-'use server';
-
 import {
   collection,
   addDoc,
