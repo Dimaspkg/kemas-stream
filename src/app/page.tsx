@@ -44,20 +44,30 @@ export default function Home() {
     const video = videoRef.current;
     if (!video) return;
 
-    // Start muted and with volume 0
+    // Unmute and set volume to 0 to start the fade-in.
+    // The browser might still block this if there's no user interaction,
+    // but controls are enabled for the user to manually play/unmute.
     video.muted = false;
     video.volume = 0;
 
     let currentVolume = 0;
+    // Clear any existing interval to prevent multiple fade-ins
+    const existingInterval = video.dataset.fadeIntervalId;
+    if (existingInterval) {
+        clearInterval(Number(existingInterval));
+    }
+
     const fadeAudio = setInterval(() => {
       currentVolume += 0.05;
       if (currentVolume >= 1) {
         video.volume = 1;
         clearInterval(fadeAudio);
+        delete video.dataset.fadeIntervalId;
       } else {
         video.volume = currentVolume;
       }
     }, 100); // increase volume every 100ms for a 2s fade-in
+    video.dataset.fadeIntervalId = String(fadeAudio);
   };
 
   const renderContent = () => {
