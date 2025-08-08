@@ -4,12 +4,13 @@
 import { useState } from 'react';
 import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { PlayCircle, Trash2, Calendar, Link as LinkIcon } from 'lucide-react';
+import { PlayCircle, Trash2, Calendar, Link as LinkIcon, Copy, Check } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { deleteVideoFromPlaylist, type PlaylistItem } from '@/services/playlist-service';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '../ui/alert-dialog';
 import { PlaylistPreviewDialog } from './playlist-preview-dialog';
 import { format } from 'date-fns';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '../ui/tooltip';
 
 interface PlaylistItemCardProps {
     item: PlaylistItem;
@@ -18,6 +19,7 @@ interface PlaylistItemCardProps {
 export function PlaylistItemCard({ item }: PlaylistItemCardProps) {
     const { toast } = useToast();
     const [isPreviewOpen, setIsPreviewOpen] = useState(false);
+    const [hasCopied, setHasCopied] = useState(false);
 
     const handleDelete = async () => {
         try {
@@ -34,6 +36,12 @@ export function PlaylistItemCard({ item }: PlaylistItemCardProps) {
             });
         }
     };
+    
+    const handleCopy = () => {
+        navigator.clipboard.writeText(item.url);
+        setHasCopied(true);
+        setTimeout(() => setHasCopied(false), 2000); // Reset after 2 seconds
+    }
 
     return (
         <>
@@ -44,10 +52,33 @@ export function PlaylistItemCard({ item }: PlaylistItemCardProps) {
                     </div>
                     <div className="space-y-2 text-sm">
                         <div className="flex items-center gap-2 text-muted-foreground">
-                            <LinkIcon className="h-4 w-4" />
-                            <a href={item.url} target="_blank" rel="noopener noreferrer" className="truncate hover:underline">
+                            <TooltipProvider>
+                                <Tooltip>
+                                    <TooltipTrigger asChild>
+                                        <a href={item.url} target="_blank" rel="noopener noreferrer" className="hover:text-primary">
+                                            <LinkIcon className="h-4 w-4" />
+                                        </a>
+                                    </TooltipTrigger>
+                                    <TooltipContent>
+                                        <p>Open in new tab</p>
+                                    </TooltipContent>
+                                </Tooltip>
+                            </TooltipProvider>
+                            <span className="truncate flex-1" title={item.url}>
                                 {item.url}
-                            </a>
+                            </span>
+                            <TooltipProvider>
+                                <Tooltip>
+                                    <TooltipTrigger asChild>
+                                        <Button variant="ghost" size="icon" className="h-7 w-7" onClick={handleCopy}>
+                                            {hasCopied ? <Check className="h-4 w-4 text-green-500" /> : <Copy className="h-4 w-4" />}
+                                        </Button>
+                                    </TooltipTrigger>
+                                    <TooltipContent>
+                                        <p>Copy URL</p>
+                                    </TooltipContent>
+                                </Tooltip>
+                            </TooltipProvider>
                         </div>
                         {item.createdAt && (
                             <div className="flex items-center gap-2 text-muted-foreground">
