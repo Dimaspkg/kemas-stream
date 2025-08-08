@@ -9,7 +9,7 @@ export default function Home() {
   const [activeContent, setActiveContent] = useState<ActiveContent | null>(null);
   const [currentVideoIndex, setCurrentVideoIndex] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
-  
+
   useEffect(() => {
     const handleContentUpdate = (content: ActiveContent | null) => {
       // If content type changes, reset playlist index
@@ -21,7 +21,7 @@ export default function Home() {
         setIsLoading(false);
       }
     };
-    
+
     // onContentChange will provide the initial state.
     const unsubscribe = onContentChange(handleContentUpdate);
 
@@ -47,14 +47,14 @@ export default function Home() {
         </div>
       );
     }
-    
+
     // Priority 1: Scheduled Video
-    if (activeContent?.type === 'video') {
+    if (activeContent?.type === 'scheduled-video') {
        return (
-          <video 
-            key={activeContent.id} 
+          <video
+            key={activeContent.id}
             src={activeContent.url}
-            autoPlay 
+            autoPlay
             controls
             muted
             playsInline
@@ -74,10 +74,10 @@ export default function Home() {
          return null;
        }
       return (
-        <video 
-          key={activeVideo.id} 
+        <video
+          key={activeVideo.id}
           src={activeVideo.url}
-          autoPlay 
+          autoPlay
           controls
           muted
           playsInline
@@ -88,18 +88,36 @@ export default function Home() {
         </video>
       );
     }
-    
-    // Priority 3: Fallback Image
-    if (activeContent?.type === 'image') {
-        return (
-            <div className="h-full w-full bg-black flex items-center justify-center">
-                 <img 
-                    src={activeContent.url} 
-                    alt="Fallback Content"
-                    className="h-full w-full object-contain"
-                 />
-            </div>
-        )
+
+    // Priority 3: Fallback Content
+    if (activeContent?.type === 'fallback') {
+        if (activeContent.type === 'image') {
+            return (
+                <div className="h-full w-full bg-black flex items-center justify-center">
+                    <img
+                        src={activeContent.url}
+                        alt="Fallback Content"
+                        className="h-full w-full object-contain"
+                    />
+                </div>
+            )
+        }
+        if (activeContent.type === 'video') {
+             return (
+                <video
+                    key={activeContent.id}
+                    src={activeContent.url}
+                    autoPlay
+                    controls
+                    muted
+                    loop
+                    playsInline
+                    className="h-full w-full object-contain bg-black"
+                >
+                    Your browser does not support the video tag.
+                </video>
+            );
+        }
     }
 
     // Final Fallback: Nothing is configured

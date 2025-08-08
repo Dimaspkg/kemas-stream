@@ -8,10 +8,10 @@ import { getPlaylistForPlayback, type PlaylistItem } from './playlist-service';
 import { findActiveSchedule, type ScheduleItem } from './schedule-service';
 import { getFallbackContent, type FallbackContent } from './fallback-service';
 
-export type ActiveContent = 
-  | ({ type: 'video' } & PlaylistItem)
+export type ActiveContent =
+  | ({ type: 'scheduled-video' } & ScheduleItem)
   | ({ type: 'playlist'; items: PlaylistItem[] })
-  | ({ type: 'image' } & FallbackContent);
+  | ({ type: 'fallback' } & FallbackContent);
 
 
 // This function now determines the active content with a clear priority:
@@ -22,16 +22,12 @@ export async function getActiveContent(): Promise<ActiveContent | null> {
     // 1. Check for a live scheduled item
     const activeSchedule = await findActiveSchedule();
     if (activeSchedule) {
-        return { 
-          type: 'video',
-          id: activeSchedule.id, 
-          url: activeSchedule.url, 
-          title: activeSchedule.title, 
-          category: '', // Scheduled items don't have a category in this model
-          createdAt: activeSchedule.startTime 
+        return {
+          type: 'scheduled-video',
+          ...activeSchedule
         };
     }
-    
+
     // 2. If no schedule, check for a playlist with items
     const playlist = await getPlaylistForPlayback();
     if (playlist.length > 0) {
@@ -41,7 +37,7 @@ export async function getActiveContent(): Promise<ActiveContent | null> {
     // 3. If no schedule and empty playlist, check for fallback content
     const fallback = await getFallbackContent();
     if (fallback) {
-        return fallback;
+        return { type: 'fallback', ...fallback };
     }
 
     // Nothing is configured
@@ -51,7 +47,7 @@ export async function getActiveContent(): Promise<ActiveContent | null> {
 
 // This function now listens to changes in THREE collections: schedule, playlist, and fallback
 export function onContentChange(callback: (content: ActiveContent | null) => void): () => void {
-    
+
     const performCheck = async () => {
         const content = await getActiveContent();
         callback(content);

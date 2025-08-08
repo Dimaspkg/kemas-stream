@@ -39,13 +39,30 @@ export default function AdminPage() {
             return <Skeleton className="aspect-video w-full" />;
         }
         
-        const contentToRender = activeContent;
-
-        if (contentToRender?.type === 'video' && contentToRender?.url) {
-            return (
+        if (activeContent?.type === 'scheduled-video') {
+             return (
                 <video
-                    key={contentToRender.id || contentToRender.url}
-                    src={contentToRender.url}
+                    key={activeContent.id}
+                    src={activeContent.url}
+                    controls
+                    muted
+                    autoPlay
+                    loop
+                    playsInline
+                    className="aspect-video w-full rounded-lg bg-black object-contain"
+                >
+                    Your browser does not support the video tag.
+                </video>
+            );
+        }
+
+        if (activeContent?.type === 'playlist' && activeContent.items.length > 0) {
+            // Preview the first video of the playlist
+            const firstVideo = activeContent.items[0];
+             return (
+                <video
+                    key={firstVideo.id}
+                    src={firstVideo.url}
                     controls
                     muted
                     autoPlay
@@ -58,14 +75,32 @@ export default function AdminPage() {
             );
         }
         
-        if (contentToRender?.type === 'image' && contentToRender?.url) {
-             return (
-                 <img 
-                    src={contentToRender.url} 
-                    alt="Current Fallback Content"
-                    className="aspect-video w-full rounded-lg bg-muted object-contain"
-                 />
-             )
+        if (activeContent?.type === 'fallback') {
+            if (activeContent.type === 'video') {
+                 return (
+                    <video
+                        key={activeContent.id}
+                        src={activeContent.url}
+                        controls
+                        muted
+                        autoPlay
+                        loop
+                        playsInline
+                        className="aspect-video w-full rounded-lg bg-black object-contain"
+                    >
+                        Your browser does not support the video tag.
+                    </video>
+                );
+            }
+             if (activeContent.type === 'image') {
+                 return (
+                     <img 
+                        src={activeContent.url} 
+                        alt="Current Fallback Content"
+                        className="aspect-video w-full rounded-lg bg-muted object-contain"
+                     />
+                 )
+            }
         }
 
         return (
