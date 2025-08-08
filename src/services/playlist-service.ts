@@ -36,6 +36,15 @@ export async function getPlaylist(): Promise<PlaylistItem[]> {
   return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as PlaylistItem));
 }
 
+
+export async function getPlaylistForPlayback(): Promise<PlaylistItem[]> {
+  // For playback, we might want them in the order they were added (oldest first)
+  const q = query(playlistCollection, orderBy('createdAt', 'asc'));
+  const snapshot = await getDocs(q);
+  return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as PlaylistItem));
+}
+
+
 export function onPlaylistUpdate(callback: (playlist: PlaylistItem[]) => void): () => void {
     const q = query(playlistCollection, orderBy('createdAt', 'desc'));
     const unsubscribe = onSnapshot(q, (snapshot) => {

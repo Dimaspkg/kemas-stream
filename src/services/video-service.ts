@@ -5,46 +5,21 @@ import {
   onSnapshot
 } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
+import { getPlaylistForPlayback, type PlaylistItem } from './playlist-service';
 
-const videoConfigDoc = doc(db, 'settings', 'fallbackContent');
+
+// The concept of a single fallback content is deprecated.
+// The playlist now serves as the dynamic fallback.
+// These interfaces and functions are kept for potential future use or can be removed.
 
 export interface FallbackContent {
-    type: 'video' | 'image';
-    url: string;
+    type: 'video' | 'image' | 'playlist';
+    url?: string; // For single video/image
+    playlistId?: string; // For a playlist
 }
 
-export function onContentChange(callback: (content: FallbackContent | null) => void): () => void {
-    const unsubscribe = onSnapshot(videoConfigDoc, (snapshot) => {
-        if (snapshot.exists()) {
-            callback(snapshot.data() as FallbackContent);
-        } else {
-            callback({ type: 'video', url: '' });
-        }
-    });
-    return unsubscribe;
-}
-
-export async function setFallbackContent(content: FallbackContent): Promise<void> {
-  await setDoc(videoConfigDoc, content);
-}
-
-export async function getFallbackContent(): Promise<FallbackContent | null> {
-  try {
-    const docSnap = await getDoc(videoConfigDoc);
-    if (docSnap.exists()) {
-      return docSnap.data() as FallbackContent;
-    }
-    // Default fallback if nothing is set
-    return { 
-        type: 'video', 
-        url: '' 
-    };
-  } catch (error) {
-    console.error("Error fetching fallback content:", error);
-    return null;
-  }
-}
-
-export async function getActiveContent(): Promise<FallbackContent | null> {
-    return await getFallbackContent();
+// This function now primarily serves to get the playlist for playback
+// as the active content when no other stream is scheduled.
+export async function getActiveContent(): Promise<PlaylistItem[]> {
+    return await getPlaylistForPlayback();
 }

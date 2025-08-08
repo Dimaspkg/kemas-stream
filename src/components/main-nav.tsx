@@ -13,7 +13,7 @@ export function MainNav({
   const routes = [
     {
       href: '/admin',
-      label: 'Fallback Stream',
+      label: 'Dashboard',
       active: pathname === '/admin',
     },
      {

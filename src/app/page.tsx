@@ -2,34 +2,32 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { getFallbackContent, type FallbackContent } from '@/services/video-service';
-import { onSnapshot, doc } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
+import { getPlaylistForPlayback, type PlaylistItem } from '@/services/playlist-service';
 import { Skeleton } from '@/components/ui/skeleton';
 
 export default function Home() {
-  const [activeContent, setActiveContent] = useState<FallbackContent | null>(null);
+  const [playlist, setPlaylist] = useState<PlaylistItem[]>([]);
+  const [currentVideoIndex, setCurrentVideoIndex] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const fallbackDoc = doc(db, 'settings', 'fallbackContent');
-    
-    const unsubscribe = onSnapshot(fallbackDoc, (snapshot) => {
-        if (snapshot.exists()) {
-            setActiveContent(snapshot.data() as FallbackContent);
-        }
+    async function fetchPlaylist() {
+      try {
+        const items = await getPlaylistForPlayback();
+        setPlaylist(items);
+      } catch (error) {
+        console.error("Failed to fetch playlist:", error);
+      } finally {
         setIsLoading(false);
-    });
-
-    // Initial fetch to avoid waiting for the first snapshot
-    getFallbackContent().then(content => {
-        setActiveContent(content);
-        setIsLoading(false);
-    });
-
-    return () => unsubscribe();
+      }
+    }
+    fetchPlaylist();
   }, []);
 
+  const handleVideoEnded = () => {
+    setCurrentVideoIndex((prevIndex) => (prevIndex + 1) % playlist.length);
+  };
+  
   const renderContent = () => {
     if (isLoading) {
        return (
@@ -39,42 +37,30 @@ export default function Home() {
       );
     }
     
-    if (!activeContent || !activeContent.url) {
+    if (playlist.length === 0) {
       return (
         <div className="flex h-full w-full items-center justify-center bg-black text-white">
-          <p>No content is configured to play.</p>
+          <p>The playlist is empty. Add videos in the admin panel.</p>
         </div>
       );
     }
 
-    if (activeContent.type === 'video') {
-      return (
-        <video 
-          key={activeContent.url} 
-          src={activeContent.url}
-          autoPlay 
-          loop
-          controls
-          muted
-          playsInline
-          className="h-full w-full object-cover"
-        >
-          Your browser does not support the video tag.
-        </video>
-      );
-    }
+    const activeVideo = playlist[currentVideoIndex];
 
-    if (activeContent.type === 'image') {
-      return (
-         <img 
-            src={activeContent.url} 
-            alt="Live Stream Content" 
-            className="h-full w-full object-cover"
-        />
-      );
-    }
-
-    return null;
+    return (
+      <video 
+        key={activeVideo.id} 
+        src={activeVideo.url}
+        autoPlay 
+        controls
+        muted
+        playsInline
+        onEnded={handleVideoEnded}
+        className="h-full w-full object-cover"
+      >
+        Your browser does not support the video tag.
+      </video>
+    );
   }
 
   return (
