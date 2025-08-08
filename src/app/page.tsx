@@ -2,27 +2,21 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { getActiveContent, onContentChange, type PlaylistItem } from '@/services/video-service';
+import { getActiveContent, onContentChange, type ActiveContent } from '@/services/video-service';
 import { Skeleton } from '@/components/ui/skeleton';
 
 export default function Home() {
-  const [activeContent, setActiveContent] = useState<PlaylistItem | null>(null);
-  const [playlist, setPlaylist] = useState<PlaylistItem[]>([]);
+  const [activeContent, setActiveContent] = useState<ActiveContent | null>(null);
   const [currentVideoIndex, setCurrentVideoIndex] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   
   useEffect(() => {
-    const handleContentUpdate = (content: PlaylistItem | PlaylistItem[] | null) => {
-      if (Array.isArray(content)) {
-        // It's a playlist
-        setActiveContent(null); // No single active content
-        setPlaylist(content);
-        setCurrentVideoIndex(0); // Reset index when playlist changes
-      } else {
-        // It's a single scheduled item or null
-        setActiveContent(content);
-        setPlaylist([]); // Not in playlist mode
+    const handleContentUpdate = (content: ActiveContent | null) => {
+      // If content type changes, reset playlist index
+      if (activeContent?.type !== content?.type && content?.type === 'playlist') {
+        setCurrentVideoIndex(0);
       }
+      setActiveContent(content);
       if (isLoading) {
         setIsLoading(false);
       }
@@ -36,13 +30,12 @@ export default function Home() {
       handleContentUpdate(content);
     });
 
-
     return () => unsubscribe();
-  }, [isLoading]);
+  }, [isLoading, activeContent?.type]);
 
   const handleVideoEnded = () => {
-    if (playlist.length > 0) {
-      setCurrentVideoIndex((prevIndex) => (prevIndex + 1) % playlist.length);
+    if (activeContent?.type === 'playlist' && activeContent.items.length > 0) {
+      setCurrentVideoIndex((prevIndex) => (prevIndex + 1) % activeContent.items.length);
     }
   };
 
@@ -55,8 +48,8 @@ export default function Home() {
       );
     }
     
-    // If there is a scheduled item, play it.
-    if (activeContent) {
+    // Priority 1: Scheduled Video
+    if (activeContent?.type === 'video') {
        return (
           <video 
             key={activeContent.id} 
@@ -65,16 +58,21 @@ export default function Home() {
             controls
             muted
             playsInline
-            className="h-full w-full object-cover"
+            className="h-full w-full object-contain bg-black"
           >
             Your browser does not support the video tag.
           </video>
         );
     }
 
-    // Otherwise, play from the playlist
-    if (playlist.length > 0 && playlist[currentVideoIndex]) {
-      const activeVideo = playlist[currentVideoIndex];
+    // Priority 2: Playlist
+    if (activeContent?.type === 'playlist' && activeContent.items.length > 0) {
+      const activeVideo = activeContent.items[currentVideoIndex];
+       if (!activeVideo) {
+         // This can happen if the playlist is modified while playing
+         setCurrentVideoIndex(0);
+         return null;
+       }
       return (
         <video 
           key={activeVideo.id} 
@@ -84,17 +82,30 @@ export default function Home() {
           muted
           playsInline
           onEnded={handleVideoEnded}
-          className="h-full w-full object-cover"
+          className="h-full w-full object-contain bg-black"
         >
           Your browser does not support the video tag.
         </video>
       );
     }
+    
+    // Priority 3: Fallback Image
+    if (activeContent?.type === 'image') {
+        return (
+            <div className="h-full w-full bg-black flex items-center justify-center">
+                 <img 
+                    src={activeContent.url} 
+                    alt="Fallback Content"
+                    className="h-full w-full object-contain"
+                 />
+            </div>
+        )
+    }
 
-    // Fallback if no schedule and no playlist
+    // Final Fallback: Nothing is configured
     return (
       <div className="flex h-full w-full items-center justify-center bg-black text-white">
-        <p>The stream is currently offline. Nothing is scheduled and the playlist is empty.</p>
+        <p className="text-center p-4">The stream is currently offline. No content is scheduled, the playlist is empty, and no fallback has been set.</p>
       </div>
     );
   }

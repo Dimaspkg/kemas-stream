@@ -6,25 +6,35 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Separator } from '@/components/ui/separator';
 import { ScheduleForm } from '@/components/schedule/schedule-form';
 import { ScheduleList } from '@/components/schedule/schedule-list';
-import { getActiveContent, onContentChange, type PlaylistItem } from '@/services/video-service';
+import { getActiveContent, onContentChange, type ActiveContent } from '@/services/video-service';
 import { Skeleton } from '@/components/ui/skeleton';
+import { FallbackForm } from '@/components/fallback/fallback-form';
+import { getFallbackContent, type FallbackContent } from '@/services/fallback-service';
 
 export default function AdminPage() {
-    const [activeContent, setActiveContent] = useState<PlaylistItem | null>(null);
+    const [activeContent, setActiveContent] = useState<ActiveContent | null>(null);
+    const [fallbackContent, setFallbackContent] = useState<FallbackContent | null>(null);
     const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
-        const handleContentUpdate = (content: PlaylistItem | null) => {
+        const handleContentUpdate = (content: ActiveContent | null) => {
             setActiveContent(content);
             if (isLoading) {
                 setIsLoading(false);
             }
         };
-        
-        // Initial fetch
-        getActiveContent().then(handleContentUpdate);
 
-        // Listen for real-time updates
+        const fetchInitialData = async () => {
+            const [initialContent, initialFallback] = await Promise.all([
+                getActiveContent(),
+                getFallbackContent()
+            ]);
+            handleContentUpdate(initialContent);
+            setFallbackContent(initialFallback);
+        };
+        
+        fetchInitialData();
+
         const unsubscribe = onContentChange(handleContentUpdate);
 
         return () => unsubscribe();
@@ -35,12 +45,14 @@ export default function AdminPage() {
         if (isLoading) {
             return <Skeleton className="aspect-video w-full" />;
         }
+        
+        const contentToRender = activeContent;
 
-        if (activeContent?.url) {
+        if (contentToRender?.type === 'video' && contentToRender?.url) {
             return (
                 <video
-                    key={activeContent.id}
-                    src={activeContent.url}
+                    key={contentToRender.id || contentToRender.url}
+                    src={contentToRender.url}
                     controls
                     muted
                     autoPlay
@@ -52,10 +64,22 @@ export default function AdminPage() {
                 </video>
             );
         }
+        
+        if (contentToRender?.type === 'image' && contentToRender?.url) {
+             return (
+                 <img 
+                    src={contentToRender.url} 
+                    alt="Current Fallback Content"
+                    className="aspect-video w-full rounded-lg bg-muted object-contain"
+                 />
+             )
+        }
 
         return (
             <div className="aspect-video w-full rounded-lg bg-muted flex items-center justify-center">
-                <p className="text-muted-foreground">No active content or playlist is empty.</p>
+                <p className="text-muted-foreground text-center p-4">
+                    Nothing is scheduled and the playlist is empty. The final fallback content will be shown.
+                </p>
             </div>
         );
     };
@@ -75,6 +99,17 @@ export default function AdminPage() {
                             {renderPreview()}
                         </CardContent>
                     </Card>
+                     <Card>
+                        <CardHeader>
+                            <CardTitle>Final Fallback Content</CardTitle>
+                            <CardDescription>
+                               This content plays only when nothing is scheduled AND the playlist is empty.
+                            </CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                           <FallbackForm initialFallbackContent={fallbackContent} />
+                        </CardContent>
+                    </Card>
                 </div>
 
                 <div className="space-y-6">
@@ -82,7 +117,7 @@ export default function AdminPage() {
                         <CardHeader>
                             <CardTitle>Schedule a Video</CardTitle>
                             <CardDescription>
-                                Add a video to be played at a specific time. Scheduled videos will override the default playlist.
+                                Add a video to be played at a specific time. Scheduled videos will override the playlist and fallback content.
                             </CardDescription>
                         </CardHeader>
                         <CardContent>
@@ -97,7 +132,7 @@ export default function AdminPage() {
             <div>
                  <h2 className="text-2xl font-bold tracking-tight mb-2">Upcoming & Live</h2>
                  <p className="text-muted-foreground mb-4">
-                    Manage your scheduled broadcast.
+                    Manage your scheduled broadcast. The live item is what is currently playing.
                 </p>
                 <ScheduleList />
             </div>

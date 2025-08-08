@@ -1,20 +1,29 @@
+
 import {
-  doc,
-  getDoc,
-  setDoc,
-  onSnapshot
+  onSnapshot,
+  collection
 } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { getPlaylistForPlayback, type PlaylistItem } from './playlist-service';
-import { findActiveSchedule, onScheduleChange, type ScheduleItem } from './schedule-service';
+import { findActiveSchedule, type ScheduleItem } from './schedule-service';
+import { getFallbackContent, type FallbackContent } from './fallback-service';
+
+export type ActiveContent = 
+  | ({ type: 'video' } & PlaylistItem)
+  | ({ type: 'playlist'; items: PlaylistItem[] })
+  | ({ type: 'image' } & FallbackContent);
 
 
-// This function now determines the active content by first checking
-// for a scheduled item, and then falling back to the playlist.
-export async function getActiveContent(): Promise<PlaylistItem | PlaylistItem[] | null> {
+// This function now determines the active content with a clear priority:
+// 1. Scheduled Item
+// 2. Playlist
+// 3. Final Fallback Content
+export async function getActiveContent(): Promise<ActiveContent | null> {
+    // 1. Check for a live scheduled item
     const activeSchedule = await findActiveSchedule();
     if (activeSchedule) {
         return { 
+          type: 'video',
           id: activeSchedule.id, 
           url: activeSchedule.url, 
           title: activeSchedule.title, 
@@ -23,20 +32,43 @@ export async function getActiveContent(): Promise<PlaylistItem | PlaylistItem[] 
         };
     }
     
-    // If no schedule, return the whole playlist
-    return await getPlaylistForPlayback();
+    // 2. If no schedule, check for a playlist with items
+    const playlist = await getPlaylistForPlayback();
+    if (playlist.length > 0) {
+        return { type: 'playlist', items: playlist };
+    }
+
+    // 3. If no schedule and empty playlist, check for fallback content
+    const fallback = await getFallbackContent();
+    if (fallback) {
+        return fallback;
+    }
+
+    // Nothing is configured
+    return null;
 }
 
 
-export function onContentChange(callback: (content: PlaylistItem | PlaylistItem[] | null) => void): () => void {
-    // This function will be called whenever the schedule collection changes.
-    const unsubscribe = onScheduleChange(async () => {
+// This function now listens to changes in THREE collections: schedule, playlist, and fallback
+export function onContentChange(callback: (content: ActiveContent | null) => void): () => void {
+    
+    const performCheck = async () => {
         const content = await getActiveContent();
         callback(content);
-    });
+    };
+
+    // Listen to all relevant collections
+    const unsubSchedule = onSnapshot(collection(db, 'schedule'), performCheck);
+    const unsubPlaylist = onSnapshot(collection(db, 'playlist'), performCheck);
+    const unsubFallback = onSnapshot(collection(db, 'fallback'), performCheck);
 
     // We also immediately trigger a check when first subscribing
-    getActiveContent().then(callback);
+    performCheck();
 
-    return unsubscribe;
+    // Return a function that unsubscribes from all listeners
+    return () => {
+        unsubSchedule();
+        unsubPlaylist();
+        unsubFallback();
+    };
 }
