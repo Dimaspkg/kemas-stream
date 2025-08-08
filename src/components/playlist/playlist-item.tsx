@@ -4,7 +4,7 @@
 import { useState } from 'react';
 import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { PlayCircle, Trash2, Calendar, Link as LinkIcon, Copy, Check, Pencil, Tag } from 'lucide-react';
+import { PlayCircle, Trash2, Calendar, Link as LinkIcon, Copy, Check, Pencil, Tag, MoreVertical } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { deleteVideoFromPlaylist, type PlaylistItem } from '@/services/playlist-service';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '../ui/alert-dialog';
@@ -13,6 +13,7 @@ import { format } from 'date-fns';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '../ui/tooltip';
 import { PlaylistEditDialog } from './playlist-edit-dialog';
 import { Badge } from '../ui/badge';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '../ui/dropdown-menu';
 
 interface PlaylistItemCardProps {
     item: PlaylistItem;
@@ -22,6 +23,7 @@ export function PlaylistItemCard({ item }: PlaylistItemCardProps) {
     const { toast } = useToast();
     const [isPreviewOpen, setIsPreviewOpen] = useState(false);
     const [isEditOpen, setIsEditOpen] = useState(false);
+    const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
     const [hasCopied, setHasCopied] = useState(false);
 
     const handleDelete = async () => {
@@ -105,43 +107,55 @@ export function PlaylistItemCard({ item }: PlaylistItemCardProps) {
                         <Button variant="ghost" className="w-full" onClick={() => setIsPreviewOpen(true)}>
                             <PlayCircle className="mr-2 h-4 w-4" /> Preview
                         </Button>
-                        <Button variant="ghost" className="w-full" onClick={() => setIsEditOpen(true)}>
-                            <Pencil className="mr-2 h-4 w-4" /> Edit
-                        </Button>
-
-                         <AlertDialog>
-                            <AlertDialogTrigger asChild>
-                                <Button variant="destructive" className="w-full">
-                                    <Trash2 className="mr-2 h-4 w-4" /> Delete
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button variant="ghost" size="icon">
+                                    <MoreVertical className="h-4 w-4" />
+                                    <span className="sr-only">More actions</span>
                                 </Button>
-                            </AlertDialogTrigger>
-                            <AlertDialogContent>
-                                <AlertDialogHeader>
-                                <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-                                <AlertDialogDescription>
-                                    This action cannot be undone. This will permanently delete the video from your playlist.
-                                </AlertDialogDescription>
-                                </AlertDialogHeader>
-                                <AlertDialogFooter>
-                                <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                <AlertDialogAction onClick={handleDelete}>Delete</AlertDialogAction>
-                                </AlertDialogFooter>
-                            </AlertDialogContent>
-                        </AlertDialog>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                                <DropdownMenuItem onClick={() => setIsEditOpen(true)}>
+                                    <Pencil className="mr-2 h-4 w-4" />
+                                    <span>Edit</span>
+                                </DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => setIsDeleteDialogOpen(true)} className="text-destructive">
+                                    <Trash2 className="mr-2 h-4 w-4" />
+                                    <span>Delete</span>
+                                </DropdownMenuItem>
+                            </DropdownMenuContent>
+                        </DropdownMenu>
                     </div>
                 </CardFooter>
             </Card>
+
             <PlaylistPreviewDialog
                 isOpen={isPreviewOpen}
                 onOpenChange={setIsPreviewOpen}
                 url={item.url}
                 title={item.title}
             />
+
              <PlaylistEditDialog
                 isOpen={isEditOpen}
                 onOpenChange={setIsEditOpen}
                 item={item}
             />
+            
+             <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                    <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                        This action cannot be undone. This will permanently delete the video from your playlist.
+                    </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction onClick={handleDelete}>Delete</AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
         </>
     );
 }
