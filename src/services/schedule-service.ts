@@ -43,7 +43,7 @@ export async function addScheduleItem(url: string, startTime: Date, durationMinu
 export async function getSchedules(): Promise<ScheduleItem[]> {
   const now = Timestamp.now();
   // Get schedules that haven't finished yet, ordered by start time
-  const q = query(scheduleCollection, where('endTime', '>=', now), orderBy('endTime'), orderBy('startTime', 'asc'));
+  const q = query(scheduleCollection, where('endTime', '>=', now), orderBy('endTime', 'asc'));
   const snapshot = await getDocs(q);
   
   return snapshot.docs.map(doc => {
