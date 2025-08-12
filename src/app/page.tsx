@@ -155,7 +155,7 @@ export default function Home() {
           <div className="text-center text-white space-y-4 p-4">
               <h1 className="text-4xl font-bold tracking-tight">Kemas TV</h1>
               <p className="text-lg text-muted-foreground">Click or press Enter to start the stream with sound.</p>
-              <Button size="lg" className="pointer-events-none">
+              <Button size="lg" variant="destructive" className="pointer-events-none">
                   <PlayCircle className="mr-2 h-5 w-5" />
                   Start Stream
               </Button>
